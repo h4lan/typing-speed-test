@@ -3,55 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- displays site properly based on user's device -->
-
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon-32x32.png">
   
-  <title>Frontend Mentor | Typing Speed Test</title>
-
-  <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
-  <style>
-    .attribution { font-size: 11px; text-align: center; }
-    .attribution a { color: hsl(228, 45%, 44%); }
-  </style>
+  <title>Typing Speed Test</title>
 </head>
-<body>
+<body class="sora-normal">
+  <div class="content">
+    <header>
+      <!-- remplacer par logo-small sur petit ecran -->
+      <img id="header-logo" src="assets/images/logo-large.svg"/>
 
-  Personal best: <!-- PB --> WPM
+      <p id ="pb">
+        <img id="pb-img" src="assets/images/icon-personal-best.svg" />
+        Personal best: <span id="pb-wpm" class="sora-bold"> <span id="pb-wpm-score">0</span> WPM</span>
+      </p>
+    
+    </header>
 
-  WPM: <!-- WPM -->
-  Accuracy: <!-- Accuracy -->
-  Time: <!-- Time -->
+    <main>
+      <div id="before-test">
+        <div id="scores">
+          <p>WPM: <span class="score-value red">0</span></p>
+          <p>Accuracy: <span class="score-value green">0</span></p>
+          <p>Time: <span class="score-value last-score yellow">0</span></p>
+        </div>
+        
+        <div class="settings">
+          <p>Difficulty:</p>
+          <label>
+            <input type="radio" name="difficulty" value="easy"></input>
+            <span class="setting-value">Easy</span>
+          </label>
+          <label>
+            <input type="radio" name="difficulty" value="medium"></input>
+            <span class="setting-value">Medium</span>
+          </label>
+          <label class="separated">
+            <input type="radio" name="difficulty" value="hard"></input>
+            <span class="setting-value">Hard</span>
+          </label>
+        </div>
 
-  Difficulty:
-  Easy
-  Medium
-  Hard
+        <div class="settings">
+          <p>Mode:</p>
+          <label>
+            <input type="radio" name="mode" value="time"></input>
+            <span class="setting-value">Timed (60s)</span>
+          </label>
+          <label>
+            <input type="radio" name="mode" value="passage"></input>
+            <span class="setting-value">Passage</span>
+          </label>
+        </div>
+      </div>
+      
+      <div id="typing-test">
+        <!-- contient le passage, démarre test si click sur start button ou sur ce passage -->
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec facilisis facilisis nisl, ut aliquam lacus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aenean quis elit ut lorem dignissim accumsan. Nulla sapien felis, porta vitae ultrices nec, tincidunt et magna. Praesent et ante tellus. Fusce id imperdiet neque, eu auctor ipsum. Ut nec ultricies ante, quis condimentum elit. Nunc risus justo, gravida quis urna sit amet, porttitor interdum nisl. Integer sit amet est quam. Cras et nisi quis ante fermentum condimentum.</p>
+        <!-- le passage de doit pas faire la page dépasser de l'écran: ajouter "..." à la fin
+         si passage non terminé ET faire défiler vers le bas pour permettre d"éviter cela -->
+      </div>
 
-  Mode:
-  Timed (60s)
-  Passage
+      <div id="start-bar">
+        <!-- Affiche "Restart Test" si test en cours ou terminé-->
+        <button id="start-button">
+          Start Typing Test
+          <img id="icon-restart" src="./assets/images/icon-restart.svg" />
+        </button>
+        <!-- Affiché en dessous du bouton si test non débuté-->
+        <p>(Or click the text and start typing)</p>
+      </div>
+      
+      <dialog id="complete-popup" closedby="any">
+        <!-- Test Complete Start -->
+        <!-- dialog avec bouton ramenant sur page de départ -->
+        Test Complete!
+        Solid run. Keep pushing to beat your high score.
 
-  <!-- Passage -->
-
-  Start Typing Test
-  Or click the text and start typing
-
-  <!-- Test Complete Start -->
-
-  Test Complete!
-  Solid run. Keep pushing to beat your high score.
-
-  WPM: <!-- WPM -->
-  Accuracy: <!-- Accuracy -->
-  Characters: <!-- Correct/Incorrect -->
-
-  Go Again
-  
-  <!-- Test Complete End -->
-
-  <div class="attribution">
-    Challenge by <a href="https://www.frontendmentor.io?ref=challenge">Frontend Mentor</a>. 
-    Coded by <a href="#">Your Name Here</a>.
+        <p class="score">WPM: <span id="wpm-score"></span></p>
+        <p class="score">Accuracy: <span id="acc-score"></span></p>
+        <p class="score">Characters: <span class="char-score"></span></p>
+      </dialog>
+    </main>
   </div>
+  
+  <footer>
+    <!-- Test Complete End -->
+    <div class="attribution">
+      Challenge by <a href="https://www.frontendmentor.io?ref=challenge">Frontend Mentor</a>. 
+      Coded by <a href="https://github.com/h4lan">h4lan</a>.
+    </div>
+  </footer>
 </body>
 </html>

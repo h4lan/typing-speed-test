@@ -1,0 +1,244 @@
+/* Variables and presets */
+
+:root {
+    --bg-color: hsl(0, 0%, 7%);
+    --border: hsl(0, 0%, 15%);
+    --labels: hsl(240, 3%, 46%);
+    --test-text-color: hsl(240, 1%, 59%);
+    --wpm-color: hsl(0, 0%, 100%);
+
+    --selected-setting: hsl(214, 100%, 55%);
+    --light-blue: hsl(210, 100%, 65%);
+
+    --label-size: 16px;
+    --score-value-size: 22px;
+    --typing-test-size: 30px;
+
+    --bold-weight: 600;
+    --very-bold-weight: 700;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
+
+.sora-bold {
+  font-weight: 600;
+}
+
+.sora-bolder {
+  font-weight: 700;
+}
+
+.inline {
+    display: inline;
+}
+
+.red {
+    color: hsl(354, 63%, 57%);
+}
+
+.green {
+    color: hsl(140, 63%, 57%);
+}
+
+.yellow {
+    color: hsl(49, 85%, 70%);
+}
+
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--labels);
+    font-family: "Sora", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+
+    /* For the sticky footer */
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+
+    margin: auto 5em;
+}
+
+/* Header */
+
+header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2ex;
+
+    margin: 2.2ex auto 2.5ex auto;
+}
+
+#header-logo {
+    flex: 1 0 0;
+    display: inline-block;
+    max-width: fit-content;
+    width: 100%;
+}
+
+#pb {
+    flex: 0 0 1;
+}
+
+#pb-img {
+    height: 1.7ex;
+    vertical-align: middle;
+}
+
+#pb-wpm {
+    color: var(--wpm-color);
+}
+
+/* Score and settings bar */
+
+#before-test {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2.4ex 2ex;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 3ex;
+}
+
+#before-test p {
+    margin: 0;
+}
+
+#before-test > div {
+    margin: 0;
+}
+
+#scores {
+    flex: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2ex 1.8ex;
+}
+
+.score-value {
+    padding-right: 1.2ex;
+    border-right: 1px solid var(--border);
+    font-weight: 700;
+    font-size: var(--score-value-size);
+    vertical-align: middle;
+}
+
+.last-score {
+    padding: 0;
+    border: none;
+}
+
+.settings-buttons {
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.settings {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2.4ex 1ex;
+}
+
+.settings input[type="radio"] {
+    display: none;
+}
+
+.settings input[type="radio"]:checked {
+    ~ .setting-value {
+        color: var(--selected-setting);
+        border-color: var(--selected-setting);
+    }    
+}
+
+.settings > label {
+    color: var(--wpm-color);
+}
+
+.separated {
+    border-right: 1px solid var(--border);
+    padding-right: 2ex
+}
+
+.setting-value {
+    padding: 0.7ex;
+    border: 1px solid var(--labels);
+    border-radius: 1ex;
+}
+
+.setting-value:hover {
+    cursor: pointer;
+}
+
+/* Test area */
+
+#typing-test {
+    font-size: var(--typing-test-size);
+    padding-bottom: 2.5ex;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1.5ex;
+
+    > p {
+        padding: auto 0 2ex 0;
+        margin: 2ex auto 0 auto;
+    }
+}
+
+/* Start/Restart button */
+
+#start-bar {
+    text-align: center;
+}
+
+#start-button {
+    color: var(--wpm-color);
+    background-color: var(--border);
+    font-size: var(--label-size);
+    font-weight: var(--very-bold-weight);
+    text-align: center;
+    padding: 1.6ex;
+    border: none;
+    border-radius: 1ex;
+}
+
+#start-button:hover {
+    cursor: pointer;
+}
+
+#start-button ~ p {
+    margin-top: 0;
+}
+
+#icon-restart {
+    vertical-align: top;
+}
+
+footer {
+    grid-row-start: 2;
+    grid-row-end: 3;
+    margin: 6rem auto 2rem auto;
+}
+
+@media screen and (max-width: 375px) {
+    body {
+        background-color: var(--light-blue);
+    }
+}
+
+.attribution { font-size: 11px; text-align: center; }
+.attribution a { color: hsl(228, 45%, 44%); }
