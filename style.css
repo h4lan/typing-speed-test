@@ -8,7 +8,7 @@
     --wpm-color: hsl(0, 0%, 100%);
 
     --selected-setting: hsl(214, 100%, 55%);
-    --light-blue: hsl(210, 100%, 65%);
+    --mouse-over-setting: hsl(210, 100%, 65%);
 
     --label-size: 16px;
     --score-value-size: 22px;
@@ -166,6 +166,12 @@ header {
     }    
 }
 
+.settings input[type="radio"]:active {
+    ~ .setting-value {
+        border-color: var(--mouse-over-settingg);
+    }    
+}
+
 .settings > label {
     color: var(--wpm-color);
 }
@@ -183,6 +189,7 @@ header {
 
 .setting-value:hover {
     cursor: pointer;
+    color: var(--mouse-over-setting);
 }
 
 /* Test area */
@@ -218,6 +225,11 @@ header {
 
 #start-button:hover {
     cursor: pointer;
+    text-decoration: underline;
+}
+
+#start-button:active {
+    background-color: var(--labels);
 }
 
 #start-button ~ p {
@@ -234,11 +246,18 @@ footer {
     margin: 6rem auto 2rem auto;
 }
 
-@media screen and (max-width: 375px) {
-    body {
-        background-color: var(--light-blue);
-    }
+.attribution { font-size: 11px; text-align: center; }
+
+.attribution a { color: hsl(228, 45%, 44%); }
+
+.attribution a:hover {
+    color: var(--mouse-over-setting);
 }
 
-.attribution { font-size: 11px; text-align: center; }
-.attribution a { color: hsl(228, 45%, 44%); }
+/* Custom design for mobile */
+
+@media screen and (max-width: 375px) {
+    body {
+        background-color: var(--mouse-over-setting);
+    }
+}
