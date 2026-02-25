@@ -223,9 +223,15 @@ header {
     border-radius: 1ex;
 }
 
+#start-button > * {
+    vertical-align: bottom;
+}
+
 #start-button:hover {
     cursor: pointer;
-    text-decoration: underline;
+    > span {
+        text-decoration: underline;
+    }
 }
 
 #start-button:active {
