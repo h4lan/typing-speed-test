@@ -10,6 +10,10 @@
     --selected-setting: hsl(214, 100%, 55%);
     --mouse-over-setting: hsl(210, 100%, 65%);
 
+    --green: hsl(140, 63%, 57%);
+    --red: hsl(354, 63%, 57%);
+    --yellow: hsl(49, 85%, 70%);
+
     --label-size: 16px;
     --score-value-size: 22px;
     --typing-test-size: 30px;
@@ -18,51 +22,33 @@
     --very-bold-weight: 700;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
-
-.sora-bold {
-  font-weight: 600;
-}
-
-.sora-bolder {
-  font-weight: 700;
-}
-
-.inline {
-    display: inline;
-}
-
-.red {
-    color: hsl(354, 63%, 57%);
-}
-
-.green {
-    color: hsl(140, 63%, 57%);
-}
-
-.yellow {
-    color: hsl(49, 85%, 70%);
-}
-
 html {
     height: 100%;
     box-sizing: border-box;
 }
 
-body {
+body, textarea {
     background-color: var(--bg-color);
     color: var(--labels);
     font-family: "Sora", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
+    font-size: 18px
+}
 
+body {
     /* For the sticky footer */
     min-height: 100%;
     display: grid;
     grid-template-rows: 1fr auto;
 
     margin: auto 5em;
+}
+
+hr {
+    color: var(--border);
+    border-style: solid;
 }
 
 /* Header */
@@ -72,7 +58,7 @@ header {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 2ex;
+    gap: 0 2ex;
 
     margin: 2.2ex auto 2.5ex auto;
 }
@@ -105,8 +91,7 @@ header {
     align-items: center;
     flex-wrap: wrap;
     gap: 2.4ex 2ex;
-    border-bottom: 2px solid var(--border);
-    padding-bottom: 3ex;
+    margin-bottom: 2.5ex ; 
 }
 
 #before-test p {
@@ -147,12 +132,12 @@ header {
     justify-content: space-between;
 }
 
-
 .settings {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 2.4ex 1ex;
+    font-size: var(--label-size)
 }
 
 .settings input[type="radio"] {
@@ -195,20 +180,55 @@ header {
 /* Test area */
 
 #typing-test {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    margin: 1.5ex 0;
     font-size: var(--typing-test-size);
-    padding-bottom: 2.5ex;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 1.5ex;
+    word-spacing: 4px;
+}
 
-    > p {
-        padding: auto 0 2ex 0;
-        margin: 2ex auto 0 auto;
-    }
+#text-model{
+    grid-area: 1/1;
+    z-index: -1;
+    margin: 0;
+}
+
+#text-typed {
+    grid-area: 1/1;
+    color: transparent;
+    background-color: transparent;
+    /* background-color: var(--border);*/
+    width: 100% ;
+    border-style: none;
+    border-color: transparent;
+    outline: none;
+    overflow: hidden;
+    resize: none;
+
+    font-size: var(--typing-test-size);
+    padding: 0;
+
+    &:sele
+}
+
+.correct {
+    color: var(--green);
+}
+
+.incorrect {
+    color: var(--red);
+    text-decoration: underline;
+}
+
+#next-char {
+    background-color: var(--border);
 }
 
 /* Start/Restart button */
 
 #start-bar {
+    margin-top: 1em;
     text-align: center;
 }
 
@@ -258,6 +278,30 @@ footer {
 
 .attribution a:hover {
     color: var(--mouse-over-setting);
+}
+
+.sora-bold {
+  font-weight: 600;
+}
+
+.sora-bolder {
+  font-weight: 700;
+}
+
+.inline {
+    display: inline;
+}
+
+.red {
+    color: var(--red);
+}
+
+.green {
+    color: var(--green);
+}
+
+.yellow {
+    color: var(--yellow);
 }
 
 /* Custom design for mobile */

@@ -9,10 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon-32x32.png">
-  
+
   <title>Typing Speed Test</title>
 </head>
 <body class="sora-normal">
+  <script src="script.js"></script>
+
   <div class="content">
     <header>
       <!-- remplacer par logo-small sur petit ecran -->
@@ -22,7 +24,6 @@
         <img id="pb-img" src="assets/images/icon-personal-best.svg" />
         Personal best: <span id="pb-wpm" class="sora-bold"> <span id="pb-wpm-score">0</span> WPM</span>
       </p>
-    
     </header>
 
     <main>
@@ -62,15 +63,20 @@
         </div>
       </div>
       
+      <hr>
+
       <div id="typing-test">
         <!-- contient le passage, démarre test si click sur start button ou sur ce passage -->
         
         <!-- Si test non commencé, mettre texte: "Click here to start"-->
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec facilisis facilisis nisl, ut aliquam lacus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aenean quis elit ut lorem dignissim accumsan. Nulla sapien felis, porta vitae ultrices nec, tincidunt et magna. Praesent et ante tellus. Fusce id imperdiet neque, eu auctor ipsum. Ut nec ultricies ante, quis condimentum elit. Nunc risus justo, gravida quis urna sit amet, porttitor interdum nisl. Integer sit amet est quam. Cras et nisi quis ante fermentum condimentum.</p>
-        
+        <p id="text-model"></p>
+        <textarea spellcheck="false" id="text-typed"></textarea>
+
         <!-- le passage de doit pas faire la page dépasser de l'écran: ajouter "..." à la fin
          si passage non terminé ET faire défiler vers le bas pour permettre d"éviter cela -->
       </div>
+
+      <hr>
 
       <div id="start-bar">
         <!-- Affiche "Restart Test" si test en cours ou terminé-->
