@@ -160,7 +160,7 @@ function generateTextModel(difficulty) {
     }
 }
 
-function checkModel() {
+function checkModel(previousLength) {
   const textModel = document.querySelector("#text-model")
   const textTyped = document.querySelector("#text-typed").value
   const nextCharIdx = textTyped.length
@@ -191,7 +191,8 @@ function checkModel() {
   // Applying style to the next character to type 
   nextChar.classList.remove("correct", "incorrect")
   nextChar.id = "next-char"
-  
+ 
+  // TODO: limiter l'avancée de next-chat jusqu'au dernier charactère
 }
 
 function initialize() {
@@ -209,5 +210,22 @@ function initialize() {
 window.addEventListener("load", () => {
   generateTextModel("easy")
   initialize()
-  document.querySelector("#text-typed").addEventListener("input", checkModel)
+
+  const textTyped = document.querySelector("#text-typed")
+  
+  // Prevents pasting
+  textTyped.addEventListener("paste", (event) => {
+    event.preventDefault()
+  })
+
+  let previousLength = -1
+  textTyped.addEventListener("beforeinput", function() {previousLength = textTyped.value.length})
+  textTyped.addEventListener("input", () => {checkModel(previousLength)})
+})
+
+window.addEventListener("keydown", (event) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    // Notif "Shorcuts disabled on this site"
+  }
 })
