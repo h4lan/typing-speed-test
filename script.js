@@ -127,6 +127,21 @@ const data = {
   ]
 }
 
+const gameEndEvent = new Event("gameEnd")
+
+const game = {
+  typed: 0,
+  mistakes: 0,
+  pb: 0,
+  time: 0,
+  previousGameStats: {
+    wpm: 0,
+    acc: 0,
+    char: 0
+  },
+
+
+
 /**
  * Replaces the current text of the #text-model element with
  * a new random one, putting each character inside a span
@@ -134,7 +149,7 @@ const data = {
  * @param {String} difficulty 
  * @returns A randomly model text selected for the test
  */
-function generateTextModel(difficulty) {
+  generateTextModel(difficulty) {
     const textModel = document.querySelector("#text-model")
     const putCharsInSpans = (text) => {
       for (i=0; i<text.length; i++) {
@@ -142,74 +157,125 @@ function generateTextModel(difficulty) {
         newSpan.textContent = text.charAt(i)
         textModel.appendChild(newSpan)
       }
+      
+      const endOfText = document.createElement("span")
+      endOfText.classList.add("end-of-text")
+      textModel.appendChild(endOfText)
     }
 
     switch (difficulty) {
-        case "easy":
-            putCharsInSpans(data.easy[Math.floor(Math.random()*data.easy.length)].text)
-            break;
-        case "medium":
-            putCharsInSpans(data.medium[Math.floor(Math.random()*data.medium.length)].text)
-            break;
-        case "hard":
-            putCharsInSpans(data.hard[Math.floor(Math.random()*data.hard.length)].text)
-            break;
-        default:
-            console.log("Error: invalid difficulty")
-            return;
+      case "easy":
+          putCharsInSpans(data.easy[Math.floor(Math.random()*data.easy.length)].text)
+          break;
+      case "medium":
+          putCharsInSpans(data.medium[Math.floor(Math.random()*data.medium.length)].text)
+          break;
+      case "hard":
+          putCharsInSpans(data.hard[Math.floor(Math.random()*data.hard.length)].text)
+          break;
+      default:
+          console.log("Error: invalid difficulty")
+          return;
     }
-}
+  },
 
-function checkModel(previousLength) {
-  const textModel = document.querySelector("#text-model")
-  const textTyped = document.querySelector("#text-typed").value
-  const nextCharIdx = textTyped.length
+  checkModel() {
+    const textModel = document.querySelector("#text-model")
+    const textTyped = document.querySelector("#text-typed").value
+    const nextCharIdx = textTyped.length
+    
+    console.log("Debug: text typed: ", textTyped)
 
-  console.log(textTyped)
+    if (nextCharIdx <= textModel.textContent.length) {
+      // Remove the styling on the previous character and apply it on the new one
+      const previousChar = document.querySelector("#next-char")
+      const nextChar = textModel.children[nextCharIdx]
 
-  // Remove the styling on the previous character and apply it on the new one
-  const previousChar = document.querySelector("#next-char")
-  const nextChar = textModel.children[nextCharIdx]
-  console.log("previousChar=", previousChar) 
-  
-  const typedChar = textTyped.charAt(nextCharIdx-1)
+      const typedChar = textTyped.charAt(nextCharIdx-1)
 
-  // Resetting any applied style
-  previousChar.id = ""
-  previousChar.classList.remove("correct", "incorrect")
+      // Resetting any applied style
+      previousChar.id = ""
+      previousChar.classList.remove("correct", "incorrect")
 
-  // Check if we just wrote, instead of deleting
-  if (previousChar.nextElementSibling === nextChar) {
-    // Checked if the character corresponds
-    if (typedChar === previousChar.textContent) {
-      previousChar.classList.add("correct")
+      // Check if we just wrote or if we deleted
+      if (previousChar.nextElementSibling === nextChar) {
+        this.typed++
+        // Check if the character corresponds
+        if (typedChar === previousChar.textContent) {
+          previousChar.classList.add("correct")
+        } else {
+          this.mistakes++
+          previousChar.classList.add("incorrect")
+        }
+      }
+      
+      // Apply style to the next character to type 
+      nextChar.classList.remove("correct", "incorrect")
+      nextChar.id = "next-char"
+      return nextChar.classList.contains("end-of-text")
+
     } else {
-      previousChar.classList.add("incorrect")
+      return true
     }
+  },
+
+  computeWpm() {
+    return Math.floor( (Math.floor(typed/5) + 1 - mistakes) / (time/60) )
+  },
+
+  start_game(difficulty, mode) {
+    const textModel = document.querySelector("#text-model")
+    const textTyped = document.querySelector("#text-typed")
+
+    this.generateTextModel(difficulty)
+
+    // Disabling selection on the text area
+    textTyped.addEventListener("select", onTextSelect = () => {
+      this.selectionStart = this.selectionEnd
+    })
+
+    // Highlighting first character
+    textModel.firstChild.id = "next-char"
+
+    // Game loop
+    switch (mode) {
+      case "timed_60":
+        setTimeout(() => {
+            textTyped.addEventListener("input", this.checkModel)
+          this.endGame()
+          document.dispatchEvent(gameEndEvent)
+        }, 60000)
+        break
+      case "passage":
+        textTyped.addEventListener("input", passageOnInput = () => {
+          if (this.checkModel()) {
+            this.endGame()
+            document.dispatchEvent(gameEndEvent)
+          }
+        })
+        break
+      default:
+        console.log("Error: invalid game mode")
+    }
+    
+    // faire setup pour que màj wpm, time et acc à chaque seconde
+    // attention timer en timed mais chronometre en passage
+  },
+
+  endGame() {
+    // désactiver zone de texte et timer
+    // enlever events de startGame
+    // return objet avec les stats pertinentes
+  },
+
+  getStats() {
+
   }
-  
-  // Applying style to the next character to type 
-  nextChar.classList.remove("correct", "incorrect")
-  nextChar.id = "next-char"
- 
-  // TODO: limiter l'avancée de next-chat jusqu'au dernier charactère
-}
-
-function initialize() {
-  // Highlighting first character
-  document.querySelector("#text-model").firstChild.id = "next-char"
-
-  // Disabling selection on the text area
-  document.querySelector("#text-typed").addEventListener("select", function() {
-    this.selectionStart = this.selectionEnd
-  })
-
-  // Disabling any input / change in the textarea other than typing
 }
 
 window.addEventListener("load", () => {
-  generateTextModel("easy")
-  initialize()
+  // generateTextModel(2)
+  // initialize()
 
   const textTyped = document.querySelector("#text-typed")
   
@@ -218,9 +284,26 @@ window.addEventListener("load", () => {
     event.preventDefault()
   })
 
-  let previousLength = -1
-  textTyped.addEventListener("beforeinput", function() {previousLength = textTyped.value.length})
-  textTyped.addEventListener("input", () => {checkModel(previousLength)})
+  // let previousLength = -1
+  // textTyped.addEventListener("input", () => {
+  //   if (game.checkModel()) {
+  //     console.log("Debug: end of text reached")
+  //   }
+  // })
+
+  game.start_game("easy", "passage")
+  
+  document.addEventListener("gameEnd", () => {
+    // TODO: mettre stats dans dialog
+    console.log("Debug: game ended")
+    document.querySelector("#complete-popup").style.display = ""
+
+    // màj stats moyennes
+    // màj pb si besoin
+    // bouton "restart test" revient à "start typing test"
+    // réafficher texte en dessous du bouton restart test
+  })
+
 })
 
 window.addEventListener("keydown", (event) => {
