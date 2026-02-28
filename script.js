@@ -127,30 +127,69 @@ const data = {
   ]
 }
 
+const timeManager = {
+  time: 0,
+  ellapsed: 0,
+  timerInterval: 0,
+  changeTime(newTime) {
+    this.time = newTime
+    document.querySelector("#time").textContent = Math.floor(newTime/60) + ":"
+      + (newTime%60<10 ? "0"+newTime%60 : newTime%60)
+  },
+  refreshOverTime() {
+    if (this.time>0) {
+      const intervalId = setInterval(() => {
+        this.changeTime(this.time-1)
+        if (this.time <= 0) {
+          clearInterval(intervalId)
+        }
+      }, 1000)
+    }
+  },
+  setTimeOut(func) {
+    this.startTimer()
+    this.refreshOverTime()
+    setTimeout(() => {
+      this.stopTimer()
+      func()
+    }, this.time*1000)
+  },
+  startTimer() {
+    this.timerInterval = setInterval(() => {
+      console.log(++this.ellapsed)
+    }, 1000)
+  },
+  stopTimer() {
+    clearInterval(this.timerInterval)
+  }
+}
+
 const gameEndEvent = new Event("gameEnd")
 
 const game = {
+  gameState: "off",
+  difficulty: "easy",
+  passageEnd: false,
+  pb: 0,
   typed: 0,
   mistakes: 0,
-  pb: 0,
-  time: 0,
-  previousGameStats: {
-    wpm: 0,
-    acc: 0,
-    char: 0
-  },
 
-
-
-/**
- * Replaces the current text of the #text-model element with
- * a new random one, putting each character inside a span
- * 
- * @param {String} difficulty 
- * @returns A randomly model text selected for the test
- */
-  generateTextModel(difficulty) {
+  /**
+   * Replaces the current text of the #text-model element with
+   * a new random one, putting each character inside a span
+   * 
+   * @returns A randomly model text selected for the test
+   */
+  generateTextModel() {
     const textModel = document.querySelector("#text-model")
+    const textTyped = document.querySelector("#text-typed")
+
+    // Deleting previous text
+    while (textModel.lastChild) {
+      textModel.removeChild(textModel.lastChild)
+      textTyped.value = ""
+    }
+
     const putCharsInSpans = (text) => {
       for (i=0; i<text.length; i++) {
         const newSpan = document.createElement("span")
@@ -163,7 +202,7 @@ const game = {
       textModel.appendChild(endOfText)
     }
 
-    switch (difficulty) {
+    switch (this.difficulty) {
       case "easy":
           putCharsInSpans(data.easy[Math.floor(Math.random()*data.easy.length)].text)
           break;
@@ -177,9 +216,12 @@ const game = {
           console.log("Error: invalid difficulty")
           return;
     }
+
+    // Highlighting first character
+    textModel.firstChild.id = "next-char"
   },
 
-  checkModel() {
+  checkModel(characterTyped) {
     const textModel = document.querySelector("#text-model")
     const textTyped = document.querySelector("#text-typed").value
     const nextCharIdx = textTyped.length
@@ -187,19 +229,21 @@ const game = {
     console.log("Debug: text typed: ", textTyped)
 
     if (nextCharIdx <= textModel.textContent.length) {
-      // Remove the styling on the previous character and apply it on the new one
+    // Remove the styling on the previous character and apply it onto the new one
       const previousChar = document.querySelector("#next-char")
       const nextChar = textModel.children[nextCharIdx]
 
       const typedChar = textTyped.charAt(nextCharIdx-1)
 
-      // Resetting any applied style
+      // Resetting the next-char style
       previousChar.id = ""
       previousChar.classList.remove("correct", "incorrect")
 
-      // Check if we just wrote or if we deleted
-      if (previousChar.nextElementSibling === nextChar) {
-        this.typed++
+      // Check if we just wrote or deleted
+      if (previousChar.nextElementSibling === nextChar) { // if we just wrote...
+        if (characterTyped) {
+          this.typed++
+        }
         // Check if the character corresponds
         if (typedChar === previousChar.textContent) {
           previousChar.classList.add("correct")
@@ -207,65 +251,84 @@ const game = {
           this.mistakes++
           previousChar.classList.add("incorrect")
         }
+      } else {
+        if (nextChar.classList.contains("incorrect")) {
+          this.mistakes--
+        }
       }
       
       // Apply style to the next character to type 
       nextChar.classList.remove("correct", "incorrect")
       nextChar.id = "next-char"
-      return nextChar.classList.contains("end-of-text")
+      this.passageEnd = nextChar.classList.contains("end-of-text")
 
     } else {
-      return true
+      this.passageEnd = true
     }
   },
 
   computeWpm() {
-    return Math.floor( (Math.floor(typed/5) + 1 - mistakes) / (time/60) )
+    return timeManager.ellapsed == 0 ?
+      "Type !"
+      : Math.round( ((Math.floor(this.typed/5) + 1) - this.mistakes) / timeManager.ellapsed * 60)
   },
 
-  start_game(difficulty, mode) {
-    const textModel = document.querySelector("#text-model")
+  startGame() {
     const textTyped = document.querySelector("#text-typed")
 
-    this.generateTextModel(difficulty)
-
-    // Disabling selection on the text area
-    textTyped.addEventListener("select", onTextSelect = () => {
-      this.selectionStart = this.selectionEnd
-    })
-
-    // Highlighting first character
-    textModel.firstChild.id = "next-char"
-
     // Game loop
-    switch (mode) {
-      case "timed_60":
-        setTimeout(() => {
-            textTyped.addEventListener("input", this.checkModel)
+    if (timeManager.time>0) {
+      // Timed mode
+      textTyped.addEventListener("input", (event) => {
+
+        // A factoriser dans une fonction
+        this.checkModel(event.data!=null)
+        document.querySelector("#wpm-score").textContent = this.computeWpm()
+        //
+
+        if (this.passageEnd) {
+          this.passageEnd=false
+          this.generateTextModel()
+        }
+      })
+      timeManager.setTimeOut(() => {
+        game.endGame()
+        document.dispatchEvent(gameEndEvent)
+      })
+    } else {
+      // Passage mode
+      timeManager.startTimer()
+      textTyped.addEventListener("input", (event) => {
+
+        //A factoriser dans une fonction
+        this.checkModel(event.data!=null)
+        document.querySelector("#wpm-score").textContent = this.computeWpm()
+        // 
+
+        if (this.passageEnd) {
           this.endGame()
           document.dispatchEvent(gameEndEvent)
-        }, 60000)
-        break
-      case "passage":
-        textTyped.addEventListener("input", passageOnInput = () => {
-          if (this.checkModel()) {
-            this.endGame()
-            document.dispatchEvent(gameEndEvent)
-          }
-        })
-        break
-      default:
-        console.log("Error: invalid game mode")
+          timeManager.stopTimer()
+        }
+      })
     }
     
     // faire setup pour que màj wpm, time et acc à chaque seconde
     // attention timer en timed mais chronometre en passage
   },
 
+  reset() {
+    // Resetting game stat variables
+    this.typed = 0;
+    this.mistakes = 0;
+    // Le temps affiché revient à la valeur dépendant du mode sélectionné
+  },
+
   endGame() {
+    console.log("Debug: game.endGame()")
     // désactiver zone de texte et timer
     // enlever events de startGame
-    // return objet avec les stats pertinentes
+    // return objet t = avec les stats pertinentes
   },
 
   getStats() {
@@ -273,30 +336,60 @@ const game = {
   }
 }
 
-window.addEventListener("load", () => {
-  // generateTextModel(2)
-  // initialize()
+window.addEventListener("keydown", (event) => {
+  if (event.ctrlKey) {
+    event.preventDefault()
+    // Notif "Shorcuts disabled on this site"
+  }
+})
 
+window.addEventListener("load", () => {
   const textTyped = document.querySelector("#text-typed")
-  
+
   // Prevents pasting
   textTyped.addEventListener("paste", (event) => {
     event.preventDefault()
   })
 
-  // let previousLength = -1
-  // textTyped.addEventListener("input", () => {
-  //   if (game.checkModel()) {
-  //     console.log("Debug: end of text reached")
-  //   }
-  // })
-
-  game.start_game("easy", "passage")
+  // Generate so text shows in the background 
+  game.generateTextModel()
   
+  // Settings buttons change game properties
+  document.querySelectorAll("div.settings input")
+    .forEach( (button) => {
+      switch (button.name) {
+        case "difficulty":
+          button.addEventListener("click", () => {
+            game.difficulty = button.value
+            game.generateTextModel()
+          })
+          break
+        case "mode":
+          button.addEventListener("click", () => {
+            timeManager.changeTime(button.value)
+          })
+          break
+        default:
+          console.error("Unrecognized settings button") 
+      }
+    })
+    
+  // Game start when clicking on the area
+  const startMsg = document.querySelector("#start-msg")
+  startMsg.addEventListener("click", () => {
+    if (game.gameState = "off") {
+      startMsg.style.display = "none"
+      textTyped.focus()
+      game.startGame()
+    }
+  })
+  
+  // TODO : remettre flou si focus perdu sur la zone de texte
+
   document.addEventListener("gameEnd", () => {
     // TODO: mettre stats dans dialog
     console.log("Debug: game ended")
-    document.querySelector("#complete-popup").style.display = ""
+    document.querySelector("#complete-popup").showModal()
 
     // màj stats moyennes
     // màj pb si besoin
@@ -306,9 +399,3 @@ window.addEventListener("load", () => {
 
 })
 
-window.addEventListener("keydown", (event) => {
-  if (event.ctrlKey) {
-    event.preventDefault()
-    // Notif "Shorcuts disabled on this site"
-  }
-})

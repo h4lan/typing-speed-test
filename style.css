@@ -15,7 +15,7 @@
     --yellow: hsl(49, 85%, 70%);
 
     --label-size: 16px;
-    --score-value-size: 22px;
+    --score-value-size: 24px;
     --typing-test-size: 30px;
 
     --bold-weight: 600;
@@ -25,10 +25,10 @@
 html {
     height: 100%;
     box-sizing: border-box;
+    background-color: var(--bg-color);
 }
 
 body, textarea {
-    background-color: var(--bg-color);
     color: var(--labels);
     font-family: "Sora", sans-serif;
     font-optical-sizing: auto;
@@ -119,6 +119,19 @@ header {
     vertical-align: middle;
 }
 
+
+#wpm-score {
+    color: var(--red);
+}
+
+#acc-score {
+    color: var(--green);
+}
+
+#time {
+    color: var(--yellow);
+}
+
 .last-score {
     padding: 0;
     border: none;
@@ -169,7 +182,7 @@ header {
 .setting-value {
     padding: 0.7ex;
     border: 1px solid var(--labels);
-    border-radius: 1ex;
+    border-radius: 10px;
 }
 
 .setting-value:hover {
@@ -185,21 +198,24 @@ header {
     grid-template-columns: 1fr;
     margin: 1.5ex 0;
     font-size: var(--typing-test-size);
-    word-spacing: 4px;
 }
 
 #text-model{
     grid-area: 1/1;
     z-index: -1;
+    pointer-events: none;
     margin: 0;
+    word-spacing: 4px;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 #text-typed {
     grid-area: 1/1;
     color: transparent;
     background-color: transparent;
-    /* background-color: var(--border);*/
-    width: 100% ;
+    pointer-events: none;
+    width: 100%;
     border-style: none;
     border-color: transparent;
     outline: none;
@@ -223,14 +239,46 @@ header {
     background-color: var(--border);
 }
 
-/* Start/Restart button */
+/* Start button */
+#start-msg {
+    grid-area: 1/1;
+    z-index:1;
+    backdrop-filter: blur(4px);
+    place-self: stretch;
+    display: grid;
+    place-items: center;
+    text-align: center;
 
-#start-bar {
+    * {
+        font-size: var(--label-size);
+        font-weight: var(--very-bold-weight);
+    }   
+}
+
+#start-button {
+    grid-area: 1/1;
+    color: var(--wpm-color);
+    background-color: var(--selected-setting);
+    
+    text-align: center;
+    padding: 1.6ex;
+    border: none;
+    border-radius: 10px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+/* Restart button */
+
+#restart-bar {
+    display: none;
     margin-top: 1em;
     text-align: center;
 }
 
-#start-button {
+#restart-button {
     color: var(--wpm-color);
     background-color: var(--border);
     font-size: var(--label-size);
@@ -238,31 +286,33 @@ header {
     text-align: center;
     padding: 1.6ex;
     border: none;
-    border-radius: 1ex;
+    border-radius: 10px;
 }
 
-#start-button > * {
+#restart-button > * {
     vertical-align: bottom;
 }
 
-#start-button:hover {
+#restart-button:hover {
     cursor: pointer;
     > span {
         text-decoration: underline;
     }
 }
 
-#start-button:active {
+#restart-button:active {
     background-color: var(--labels);
 }
 
-#start-button ~ p {
+#restart-button ~ p {
     margin-top: 0;
 }
 
 #icon-restart {
     vertical-align: top;
 }
+
+/* Footer */
 
 footer {
     grid-row-start: 2;
@@ -284,22 +334,6 @@ footer {
 
 .sora-bolder {
   font-weight: 700;
-}
-
-.inline {
-    display: inline;
-}
-
-.red {
-    color: var(--red);
-}
-
-.green {
-    color: var(--green);
-}
-
-.yellow {
-    color: var(--yellow);
 }
 
 /* Custom design for mobile */

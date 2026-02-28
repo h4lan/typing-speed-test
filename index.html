@@ -29,15 +29,15 @@
     <main>
       <div id="before-test">
         <div id="scores">
-          <p>WPM: <span class="score-value red">0</span></p>
-          <p>Accuracy: <span class="score-value green">0</span></p>
-          <p>Time: <span class="score-value last-score yellow">0</span></p>
+          <p>WPM: <span id="wpm-score" class="score-value">0</span></p>
+          <p>Accuracy: <span id="acc-score" class="score-value">_</span></p>
+          <p>Time: <span id="time" class="score-value last-score">_</span></p>
         </div>
         
         <div class="settings">
           <p>Difficulty:</p>
           <label>
-            <input type="radio" name="difficulty" value="easy"></input>
+            <input type="radio" name="difficulty" value="easy" checked></input>
             <span class="setting-value">Easy</span>
           </label>
           <label>
@@ -53,11 +53,11 @@
         <div class="settings">
           <p>Mode:</p>
           <label>
-            <input type="radio" name="mode" value="time"></input>
+            <input type="radio" name="mode" value="60"></input>
             <span class="setting-value">Timed (60s)</span>
           </label>
           <label>
-            <input type="radio" name="mode" value="passage"></input>
+            <input type="radio" name="mode" value="0" checked></input>
             <span class="setting-value">Passage</span>
           </label>
         </div>
@@ -67,25 +67,32 @@
 
       <div id="typing-test">
         <!-- contient le passage, démarre test si click sur start button ou sur ce passage -->
-        
-        <!-- Si test non commencé, mettre texte: "Click here to start"-->
+        <div id="start-msg">
+          <!-- Affiche "Restart Test" si test en cours ou terminé-->
+          <div id="start-msg-content">
+              <button id="start-button">
+                <span>Start Typing Test</span>
+              </button>
+              <p>Or click the text and start typing</p>
+          </div>
+        </div>
+
         <p id="text-model"></p>
         <textarea spellcheck="false" id="text-typed"></textarea>
 
         <!-- le passage de doit pas faire la page dépasser de l'écran: ajouter "..." à la fin
          si passage non terminé ET faire défiler vers le bas pour permettre d"éviter cela -->
+
       </div>
 
       <hr>
 
-      <div id="start-bar">
+      <div id="restart-bar">
         <!-- Affiche "Restart Test" si test en cours ou terminé-->
-        <button id="start-button">
-          <span>Start Typing Test</span>
+        <button id="restart-button">
+          <span>Restart Test</span>
           <img id="icon-restart" src="./assets/images/icon-restart.svg" />
         </button>
-        <!-- Affiché en dessous du bouton si test non débuté-->
-        <p>(Or click the text and start typing)</p>
       </div>
       
       <dialog id="complete-popup" closedby="any">
@@ -94,9 +101,9 @@
         Test Complete!
         Solid run. Keep pushing to beat your high score.
 
-        <p class="score">WPM: <span id="wpm-score"></span></p>
-        <p class="score">Accuracy: <span id="acc-score"></span></p>
-        <p class="score">Characters: <span class="char-score"></span></p>
+        <p class="score">WPM: <span></span></p>
+        <p class="score">Accuracy: <span></span></p>
+        <p class="score">Characters: <span></span></p>
       </dialog>
     </main>
   </div>
