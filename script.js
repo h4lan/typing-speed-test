@@ -131,15 +131,19 @@ const timeManager = {
   time: 0,
   ellapsed: 0,
   timerInterval: 0,
-  changeTime(newTime) {
-    this.time = newTime
-    document.querySelector("#time").textContent = Math.floor(newTime/60) + ":"
-      + (newTime%60<10 ? "0"+newTime%60 : newTime%60)
+  changeTimeShown(showEllapsed, newTime) {
+    let timeShown = this.ellapsed
+    if (!showEllapsed) { // if ellapsed time is show no update to the time variable
+      this.time = newTime
+      timeShown = this.time
+    }
+    document.querySelector("#time").textContent = Math.floor(timeShown/60) + ":"
+      + (timeShown%60<10 ? "0"+timeShown%60 : timeShown%60)
   },
   refreshOverTime() {
     if (this.time>0) {
       const intervalId = setInterval(() => {
-        this.changeTime(this.time-1)
+        this.changeTimeShown(false, this.time-1)
         if (this.time <= 0) {
           clearInterval(intervalId)
         }
@@ -147,32 +151,39 @@ const timeManager = {
     }
   },
   setTimeOut(func) {
-    this.startTimer()
+    this.startTimer(false)
     this.refreshOverTime()
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       this.stopTimer()
       func()
+      clearTimeout(timeoutId)
     }, this.time*1000)
   },
-  startTimer() {
+  startTimer(doShow) {
     this.timerInterval = setInterval(() => {
-      console.log(++this.ellapsed)
+      ++this.ellapsed
+      if (doShow) {
+        this.changeTimeShown(true, -1)
+      }
     }, 1000)
   },
   stopTimer() {
     clearInterval(this.timerInterval)
+    this.ellapsed = 0
   }
 }
 
 const gameEndEvent = new Event("gameEnd")
+const passageEndEvent = new Event("passageEnd")
 
 const game = {
   gameState: "off",
-  difficulty: "easy",
+  difficulty: "",
   passageEnd: false,
   pb: 0,
   typed: 0,
   mistakes: 0,
+  mistakesPermanent: 0,
 
   /**
    * Replaces the current text of the #text-model element with
@@ -213,15 +224,14 @@ const game = {
           putCharsInSpans(data.hard[Math.floor(Math.random()*data.hard.length)].text)
           break;
       default:
-          console.log("Error: invalid difficulty")
+          console.error("Error: invalid difficulty")
           return;
     }
 
-    // Highlighting first character
-    textModel.firstChild.id = "next-char"
+    textModel.firstChild.id = "next-char" // Highlighting first character
   },
 
-  checkModel(characterTyped) {
+  checkModel(wasCharacterTyped) {
     const textModel = document.querySelector("#text-model")
     const textTyped = document.querySelector("#text-typed").value
     const nextCharIdx = textTyped.length
@@ -241,7 +251,7 @@ const game = {
 
       // Check if we just wrote or deleted
       if (previousChar.nextElementSibling === nextChar) { // if we just wrote...
-        if (characterTyped) {
+        if (wasCharacterTyped) {
           this.typed++
         }
         // Check if the character corresponds
@@ -249,6 +259,7 @@ const game = {
           previousChar.classList.add("correct")
         } else {
           this.mistakes++
+          this.mistakesPermanent++
           previousChar.classList.add("incorrect")
         }
       } else {
@@ -256,83 +267,129 @@ const game = {
           this.mistakes--
         }
       }
-      
       // Apply style to the next character to type 
       nextChar.classList.remove("correct", "incorrect")
       nextChar.id = "next-char"
-      this.passageEnd = nextChar.classList.contains("end-of-text")
 
+      // Check if passage has ended
+      this.passageEnd = nextChar.classList.contains("end-of-text")
+      if (this.passageEnd) {
+        document.dispatchEvent(passageEndEvent)
+      }
     } else {
       this.passageEnd = true
+      document.dispatchEvent(passageEndEvent)
     }
   },
 
   computeWpm() {
-    return timeManager.ellapsed == 0 ?
-      "Type !"
-      : Math.round( ((Math.floor(this.typed/5) + 1) - this.mistakes) / timeManager.ellapsed * 60)
+    return timeManager.ellapsed == 0 ? 0
+    : Math.max(0,
+        Math.round( ((Math.floor((this.typed - this.mistakes)/5))) / timeManager.ellapsed * 60))
+  },
+  computeAccuracy() {
+    return this.typed==0 ?
+      "100%" : Math.round((1 - (this.mistakesPermanent/this.typed))*100) + "%"
+  },
+
+  textTypedTimeMode(event) {
+    this.checkModel(event.data!=null)
+    document.querySelector("#wpm-score").textContent = this.computeWpm()
+    document.querySelector("#acc-score").textContent = this.computeAccuracy()
+
+    if (this.passageEnd) {
+      this.passageEnd=false
+      this.generateTextModel()
+    }
+  },
+
+  textTypedPassageMode(event) {
+    this.checkModel(event.data!=null)
+    document.querySelector("#wpm-score").textContent = this.computeWpm()
+    document.querySelector("#acc-score").textContent = this.computeAccuracy()
+
+    if (this.passageEnd) {
+      this.endGame()
+      document.dispatchEvent(gameEndEvent)
+      timeManager.stopTimer()
+    }
   },
 
   startGame() {
+    console.log("Debug: game start")
+    this.gameState = "start"
+
     const textTyped = document.querySelector("#text-typed")
+    // Enabling text area
+    document.querySelector("#text-typed").disabled = false
+
+    // Show restart button
+    document.querySelector("#restart-bar").style.display = ""
 
     // Game loop
-    if (timeManager.time>0) {
-      // Timed mode
-      textTyped.addEventListener("input", (event) => {
+    if (timeManager.time>0) { // Timed mode
+      /** The object executing the function on input will be a
+       * HTMLTextAreaEvent, which is why we bind the definition
+       * of this to the given function
+       */
+      textTyped.addEventListener("input", this.textTypedTimeMode.bind(this))
 
-        // A factoriser dans une fonction
-        this.checkModel(event.data!=null)
-        document.querySelector("#wpm-score").textContent = this.computeWpm()
-        //
-
-        if (this.passageEnd) {
-          this.passageEnd=false
-          this.generateTextModel()
-        }
-      })
+      // One way to remove an event listener: 
       timeManager.setTimeOut(() => {
-        game.endGame()
+        this.endGame()
         document.dispatchEvent(gameEndEvent)
+        textTyped.removeEventListener("input", listener)
       })
-    } else {
-      // Passage mode
-      timeManager.startTimer()
-      textTyped.addEventListener("input", (event) => {
-
-        //A factoriser dans une fonction
-        this.checkModel(event.data!=null)
-        document.querySelector("#wpm-score").textContent = this.computeWpm()
-        // 
-
-        if (this.passageEnd) {
-          this.endGame()
-          document.dispatchEvent(gameEndEvent)
-          timeManager.stopTimer()
-        }
-      })
+    } else { // Passage mode
+      timeManager.startTimer(true)
+      textTyped.addEventListener("input", this.textTypedPassageMode.bind(this))
     }
-    
-    // faire setup pour que màj wpm, time et acc à chaque seconde
-    // attention timer en timed mais chronometre en passage
   },
 
-  reset() {
+  resetGame() {
     // Resetting game stat variables
-    this.typed = 0;
-    this.mistakes = 0;
-    // Le temps affiché revient à la valeur dépendant du mode sélectionné
+    this.difficulty = document.querySelector("div.settings input[name='difficulty']:checked").value
+    this.passageEnd = false
+    this.typed = 0
+    this.mistakes = 0
+    this.mistakesPermanent = 0
+
+    // Resetting stats and text
+    document.querySelector("#wpm-score").textContent = "-"
+    document.querySelector("#acc-score").textContent = "-"
+    this.generateTextModel()
+    // Shown time goes back to selected value
+    timeManager.changeTimeShown(false, document.querySelector("div.settings input[name='mode']:checked").value)
+    // "Restart Test" button hidden
+    document.querySelector("#restart-bar").style.display = "none"
+    // Blur comes back on the text area
+    document.querySelector("#start-msg").style.display = ""
+
   },
 
   endGame() {
-    console.log("Debug: game.endGame()")
-    // désactiver zone de texte et timer
-    // enlever events de startGame
-    // return objet t = avec les stats pertinentes
-  },
+    console.log("Debug: game ended")
+    this.gameState = "off"
 
-  getStats() {
+    const textTyped = document.querySelector("#text-typed")
+    
+    // Disable text area
+    document.querySelector("#text-typed").disabled = true
+    // Removing added events
 
+    // Updating dialog box with stats
+    document.querySelector("#wpm-final-score").textContent = document.querySelector("#wpm-score").textContent
+    document.querySelector("#acc-final-score").textContent = document.querySelector("#acc-score").textContent
+    document.querySelector("#char-final-score").textContent = this.typed
+    document.querySelector("#complete-popup").showModal()
+
+    // màj pb si besoin
+    if (parseInt(document.querySelector("#pb-wpm-score").textContent) < this.computeWpm()) {
+      console.log("Debug: New PB score")
+      document.querySelector("#pb-wpm-score").textContent = this.computeWpm()
+    }
+
+    this.resetGame()
   }
 }
 
@@ -345,14 +402,14 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("load", () => {
   const textTyped = document.querySelector("#text-typed")
+  const textModel = document.querySelector("#text-model")
 
   // Prevents pasting
   textTyped.addEventListener("paste", (event) => {
     event.preventDefault()
   })
 
-  // Generate so text shows in the background 
-  game.generateTextModel()
+  game.resetGame()
   
   // Settings buttons change game properties
   document.querySelectorAll("div.settings input")
@@ -366,7 +423,7 @@ window.addEventListener("load", () => {
           break
         case "mode":
           button.addEventListener("click", () => {
-            timeManager.changeTime(button.value)
+            timeManager.changeTimeShown(false, button.value)
           })
           break
         default:
@@ -374,28 +431,19 @@ window.addEventListener("load", () => {
       }
     })
     
+  // Game ends when clicking on restart
+  document.querySelector("#restart-bar").addEventListener("click", game.resetGame)
+  
   // Game start when clicking on the area
   const startMsg = document.querySelector("#start-msg")
   startMsg.addEventListener("click", () => {
-    if (game.gameState = "off") {
-      startMsg.style.display = "none"
-      textTyped.focus()
-      game.startGame()
-    }
+    startMsg.style.display = "none"
+    game.startGame()
+    textTyped.focus()
   })
   
+  // TODO : deux états possibles: focus perdu = flou / focus gagné grâce à clic sur start-msg = pas d'interaction curseur  
   // TODO : remettre flou si focus perdu sur la zone de texte
-
-  document.addEventListener("gameEnd", () => {
-    // TODO: mettre stats dans dialog
-    console.log("Debug: game ended")
-    document.querySelector("#complete-popup").showModal()
-
-    // màj stats moyennes
-    // màj pb si besoin
-    // bouton "restart test" revient à "start typing test"
-    // réafficher texte en dessous du bouton restart test
-  })
 
 })
 

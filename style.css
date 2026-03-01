@@ -206,15 +206,14 @@ header {
     pointer-events: none;
     margin: 0;
     word-spacing: 4px;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 #text-typed {
     grid-area: 1/1;
     color: transparent;
     background-color: transparent;
-    pointer-events: none;
     width: 100%;
     border-style: none;
     border-color: transparent;
