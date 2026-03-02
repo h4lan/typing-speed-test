@@ -137,6 +137,7 @@ header {
     border: none;
 }
 
+/* Game settings */
 .settings-buttons {
     flex-shrink: 1;
     display: flex;
@@ -190,6 +191,15 @@ header {
     color: var(--mouse-over-setting);
 }
 
+.settings-disabled {
+    pointer-events: none;
+}
+
+.settings-disabled .setting-value {
+    color: var(--labels);
+    border-color: var(--labels);
+}
+
 /* Test area */
 
 #typing-test {
@@ -212,6 +222,7 @@ header {
 
 #text-typed {
     grid-area: 1/1;
+    pointer-events: none; /* disable selection */
     color: transparent;
     background-color: transparent;
     width: 100%;
@@ -239,7 +250,7 @@ header {
 }
 
 /* Start button */
-#start-msg {
+#start-msg, #resume-msg {
     grid-area: 1/1;
     z-index:1;
     backdrop-filter: blur(4px);
@@ -254,11 +265,9 @@ header {
     }   
 }
 
-#start-button {
-    grid-area: 1/1;
+#start-button, #resume-button {
     color: var(--wpm-color);
     background-color: var(--selected-setting);
-    
     text-align: center;
     padding: 1.6ex;
     border: none;
@@ -267,6 +276,10 @@ header {
     &:hover {
         cursor: pointer;
     }
+}
+
+#resume-msg {
+    display: none; /* hidden by default */
 }
 
 /* Restart button */

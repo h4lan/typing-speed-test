@@ -131,6 +131,7 @@ const timeManager = {
   time: 0,
   ellapsed: 0,
   timerInterval: 0,
+
   changeTimeShown(showEllapsed, newTime) {
     let timeShown = this.ellapsed
     if (!showEllapsed) { // if ellapsed time is show no update to the time variable
@@ -162,16 +163,22 @@ const timeManager = {
   startTimer(doShow) {
     this.timerInterval = setInterval(() => {
       ++this.ellapsed
+
+      console.log(this.ellapsed)
+
       if (doShow) {
         this.changeTimeShown(true, -1)
       }
     }, 1000)
   },
   stopTimer() {
+    const ellapsedTime = this.ellapsed
     clearInterval(this.timerInterval)
     this.ellapsed = 0
+    return ellapsedTime
   }
 }
+
 
 const gameEndEvent = new Event("gameEnd")
 const passageEndEvent = new Event("passageEnd")
@@ -179,6 +186,8 @@ const passageEndEvent = new Event("passageEnd")
 const game = {
   gameState: "off",
   difficulty: "",
+  mode: "",
+  modeTime: -1,
   passageEnd: false,
   pb: 0,
   typed: 0,
@@ -287,19 +296,24 @@ const game = {
     : Math.max(0,
         Math.round( ((Math.floor((this.typed - this.mistakes)/5))) / timeManager.ellapsed * 60))
   },
+  computeFinalWpm() {
+    console.assert(this.modeTime > 0);
+    return Math.max(0, 
+      Math.round( ((Math.floor((this.typed - this.mistakes)/5))) / this.modeTime * 60))
+  },
   computeAccuracy() {
     return this.typed==0 ?
       "100%" : Math.round((1 - (this.mistakesPermanent/this.typed))*100) + "%"
   },
 
-  textTypedTimeMode(event) {
-    this.checkModel(event.data!=null)
-    document.querySelector("#wpm-score").textContent = this.computeWpm()
-    document.querySelector("#acc-score").textContent = this.computeAccuracy()
+  onTimedModeInput: function(event) {
+    game.checkModel(event.data!=null)
+    document.querySelector("#wpm-score").textContent = game.computeWpm()
+    document.querySelector("#acc-score").textContent = game.computeAccuracy()
 
-    if (this.passageEnd) {
-      this.passageEnd=false
-      this.generateTextModel()
+    if (game.passageEnd) {
+      game.passageEnd=false
+      game.generateTextModel()
     }
   },
 
@@ -311,7 +325,29 @@ const game = {
     if (this.passageEnd) {
       this.endGame()
       document.dispatchEvent(gameEndEvent)
-      timeManager.stopTimer()
+      this.modeTime = timeManager.stopTimer()
+    }
+  },
+
+  onInputTextTyped: function(event) {
+    game.checkModel(event.data!=null)
+    document.querySelector("#wpm-score").textContent = game.computeWpm()
+    document.querySelector("#acc-score").textContent = game.computeAccuracy()
+
+    if (game.passageEnd) {
+      switch (game.mode) {
+        case "timed":
+          game.passageEnd=false
+          game.generateTextModel()
+          break
+        case "passage":
+          game.modeTime = timeManager.stopTimer()
+          game.endGame()
+          document.dispatchEvent(gameEndEvent)
+          break
+        default:
+          console.error("Error: onInputTextTyped: invalid game.mode value")
+      }
     }
   },
 
@@ -319,36 +355,35 @@ const game = {
     console.log("Debug: game start")
     this.gameState = "start"
 
+    // Disabling settings buttons
+    document.querySelectorAll(".settings").forEach((buttons) => {
+      buttons.classList.add("settings-disabled")
+    })
+
+    // TODO : Show restart button
+    document.querySelector("#restart-bar").style.display = ""
+
     const textTyped = document.querySelector("#text-typed")
     // Enabling text area
     document.querySelector("#text-typed").disabled = false
 
-    // Show restart button
-    document.querySelector("#restart-bar").style.display = ""
-
     // Game loop
     if (timeManager.time>0) { // Timed mode
-      /** The object executing the function on input will be a
-       * HTMLTextAreaEvent, which is why we bind the definition
-       * of this to the given function
-       */
-      textTyped.addEventListener("input", this.textTypedTimeMode.bind(this))
-
       // One way to remove an event listener: 
       timeManager.setTimeOut(() => {
         this.endGame()
         document.dispatchEvent(gameEndEvent)
-        textTyped.removeEventListener("input", listener)
       })
     } else { // Passage mode
       timeManager.startTimer(true)
-      textTyped.addEventListener("input", this.textTypedPassageMode.bind(this))
     }
+    textTyped.addEventListener("input", game.onInputTextTyped)
   },
 
   resetGame() {
-    // Resetting game stat variables
+    // Resetting game stats and variables (also used for initialisation)
     this.difficulty = document.querySelector("div.settings input[name='difficulty']:checked").value
+    this.mode = document.querySelector("div.settings input[name='mode']:checked").value>0 ? "timed" : "passage"
     this.passageEnd = false
     this.typed = 0
     this.mistakes = 0
@@ -364,22 +399,31 @@ const game = {
     document.querySelector("#restart-bar").style.display = "none"
     // Blur comes back on the text area
     document.querySelector("#start-msg").style.display = ""
+    document.querySelector("#start-msg-content").style.display = ""
 
   },
 
+  // TODO : ne pas resetGame tant que dialog box affichée
   endGame() {
     console.log("Debug: game ended")
     this.gameState = "off"
 
     const textTyped = document.querySelector("#text-typed")
     
+    // TODO : Removing every event added in startGame
+    textTyped.removeEventListener("input", game.onInputTextTyped)
+
     // Disable text area
     document.querySelector("#text-typed").disabled = true
-    // Removing added events
+    
+    // Enable settings buttons
+    document.querySelectorAll(".settings").forEach((buttons) => {
+      buttons.classList.remove("settings-disabled")
+    })
 
     // Updating dialog box with stats
-    document.querySelector("#wpm-final-score").textContent = document.querySelector("#wpm-score").textContent
-    document.querySelector("#acc-final-score").textContent = document.querySelector("#acc-score").textContent
+    document.querySelector("#wpm-final-score").textContent = this.computeFinalWpm()
+    document.querySelector("#acc-final-score").textContent = this.computeAccuracy()
     document.querySelector("#char-final-score").textContent = this.typed
     document.querySelector("#complete-popup").showModal()
 
@@ -401,16 +445,14 @@ window.addEventListener("keydown", (event) => {
 })
 
 window.addEventListener("load", () => {
-  const textTyped = document.querySelector("#text-typed")
-  const textModel = document.querySelector("#text-model")
+  game.resetGame() // Show the game's "off" state
 
   // Prevents pasting
+  const textTyped = document.querySelector("#text-typed")
   textTyped.addEventListener("paste", (event) => {
     event.preventDefault()
   })
 
-  game.resetGame()
-  
   // Settings buttons change game properties
   document.querySelectorAll("div.settings input")
     .forEach( (button) => {
@@ -423,6 +465,8 @@ window.addEventListener("load", () => {
           break
         case "mode":
           button.addEventListener("click", () => {
+            game.mode = button.value > 0 ? "timed" : "passage"
+            game.modeTime = button.value
             timeManager.changeTimeShown(false, button.value)
           })
           break
@@ -438,12 +482,23 @@ window.addEventListener("load", () => {
   const startMsg = document.querySelector("#start-msg")
   startMsg.addEventListener("click", () => {
     startMsg.style.display = "none"
+    document.querySelector("#start-msg-content").style.display = "none"
     game.startGame()
     textTyped.focus()
   })
-  
-  // TODO : deux états possibles: focus perdu = flou / focus gagné grâce à clic sur start-msg = pas d'interaction curseur  
-  // TODO : remettre flou si focus perdu sur la zone de texte
 
+  // Toggles blur if text area loses focus
+  const resumeMsg = document.querySelector("#resume-msg")
+  resumeMsg.addEventListener("click", () => {
+    if (game.gameState === "start") { // blur only takes effect if game is ongoing
+      resumeMsg.style.display = "none"
+      textTyped.focus()
+    }
+  })
+  textTyped.addEventListener("blur", () => {
+    if (game.gameState === "start") {
+      resumeMsg.style.display = "grid"
+    }
+  })
 })
 
