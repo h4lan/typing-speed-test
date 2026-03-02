@@ -181,7 +181,6 @@ const timeManager = {
 
 
 const gameEndEvent = new Event("gameEnd")
-const passageEndEvent = new Event("passageEnd")
 
 const game = {
   gameState: "off",
@@ -282,12 +281,8 @@ const game = {
 
       // Check if passage has ended
       this.passageEnd = nextChar.classList.contains("end-of-text")
-      if (this.passageEnd) {
-        document.dispatchEvent(passageEndEvent)
-      }
     } else {
       this.passageEnd = true
-      document.dispatchEvent(passageEndEvent)
     }
   },
 
@@ -304,29 +299,6 @@ const game = {
   computeAccuracy() {
     return this.typed==0 ?
       "100%" : Math.round((1 - (this.mistakesPermanent/this.typed))*100) + "%"
-  },
-
-  onTimedModeInput: function(event) {
-    game.checkModel(event.data!=null)
-    document.querySelector("#wpm-score").textContent = game.computeWpm()
-    document.querySelector("#acc-score").textContent = game.computeAccuracy()
-
-    if (game.passageEnd) {
-      game.passageEnd=false
-      game.generateTextModel()
-    }
-  },
-
-  textTypedPassageMode(event) {
-    this.checkModel(event.data!=null)
-    document.querySelector("#wpm-score").textContent = this.computeWpm()
-    document.querySelector("#acc-score").textContent = this.computeAccuracy()
-
-    if (this.passageEnd) {
-      this.endGame()
-      document.dispatchEvent(gameEndEvent)
-      this.modeTime = timeManager.stopTimer()
-    }
   },
 
   onInputTextTyped: function(event) {
@@ -410,7 +382,7 @@ const game = {
 
     const textTyped = document.querySelector("#text-typed")
     
-    // TODO : Removing every event added in startGame
+    // Removing every event added in startGame
     textTyped.removeEventListener("input", game.onInputTextTyped)
 
     // Disable text area
@@ -427,10 +399,11 @@ const game = {
     document.querySelector("#char-final-score").textContent = this.typed
     document.querySelector("#complete-popup").showModal()
 
-    // màj pb si besoin
-    if (parseInt(document.querySelector("#pb-wpm-score").textContent) < this.computeWpm()) {
+    // Update PB if needed
+    if (parseInt(document.querySelector("#pb-wpm-score").textContent) < this.computeFinalWpm()) {
       console.log("Debug: New PB score")
-      document.querySelector("#pb-wpm-score").textContent = this.computeWpm()
+      this.pb = this.computeFinalWpm()
+      document.querySelector("#pb-wpm-score").textContent = this.computeFinalWpm()
     }
 
     this.resetGame()
