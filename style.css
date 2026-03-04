@@ -40,14 +40,31 @@ body, textarea {
 body {
     /* For the sticky footer */
     min-height: 100%;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     grid-template-rows: 1fr auto;
 
     margin: auto 5em;
 }
 
+#content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: stretch;
+}
+
+main {
+    flex-grow: 1;
+    display: block;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 hr {
     color: var(--border);
+    width: 100%;
     border-style: solid;
 }
 
@@ -60,7 +77,7 @@ header {
     justify-content: space-between;
     gap: 0 2ex;
 
-    margin: 2.2ex auto 2.5ex auto;
+    margin: 2.2ex 0 2.5ex 0;
 }
 
 #header-logo {
@@ -206,6 +223,7 @@ header {
     display: grid;
     grid-template-rows: 1fr;
     grid-template-columns: 1fr;
+    flex-grow: 1;
     margin: 1.5ex 0;
     font-size: var(--typing-test-size);
 }
@@ -329,7 +347,7 @@ header {
 footer {
     grid-row-start: 2;
     grid-row-end: 3;
-    margin: 6rem auto 2rem auto;
+    margin: 4rem auto 2rem auto;
 }
 
 .attribution { font-size: 11px; text-align: center; }
