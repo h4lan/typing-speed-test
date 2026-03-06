@@ -29,24 +29,30 @@
     <main>
       <div id="before-test">
         <div id="scores">
-          <p>WPM: <span id="wpm-score" class="score-value">-</span></p>
-          <p>Accuracy: <span id="acc-score" class="score-value">-</span></p>
-          <p>Time: <span id="time" class="score-value last-score">0:00</span></p>
+          <p>WPM: <span id="wpm-score" class="score-value red">-</span></p>
+          <p>Accuracy: <span id="acc-score" class="score-value green">-</span></p>
+          <p>Time: <span id="time" class="score-value yellow last-score">0:00</span></p>
         </div>
         
         <div class="settings">
           <p>Difficulty:</p>
           <label>
             <input type="radio" name="difficulty" value="easy" checked></input>
-            <span class="setting-value">Easy</span>
+            <span class="selectable">
+              <span class="setting-value">Easy</span>
+            </span>
           </label>
           <label>
             <input type="radio" name="difficulty" value="medium"></input>
-            <span class="setting-value">Medium</span>
+            <span class="selectable">
+              <span class="setting-value">Medium</span>
+            </span>
           </label>
           <label class="separated">
             <input type="radio" name="difficulty" value="hard"></input>
-            <span class="setting-value">Hard</span>
+            <span class="selectable">
+              <span class="setting-value">Hard</span>
+            </span>
           </label>
         </div>
 
@@ -54,11 +60,15 @@
           <p>Mode:</p>
           <label>
             <input type="radio" name="mode" value="60"></input>
-            <span class="setting-value">Timed (60s)</span>
+            <span class="selectable">
+              <span class="setting-value">Timed (60s)</span>
+            </span>
           </label>
           <label>
             <input type="radio" name="mode" value="0" checked></input>
-            <span class="setting-value">Passage</span>
+            <span class="selectable">
+              <span class="setting-value">Passage</span>
+            </span>
           </label>
         </div>
       </div>
@@ -70,14 +80,16 @@
         <div id="start-msg">
           <!-- Affiche "Restart Test" si test en cours ou terminé-->
           <div id="start-msg-content">
-              <button id="start-button"> <span>Start Typing Test</span> </button>
+              <span class="selectable">
+                <button id="start-button"> <span>Start Typing Test</span> </button>
+              </span>
               <p>Or click the text and start typing</p>
           </div>
         </div>
 
         <div id="resume-msg">
           <div id ="resume-msg-content">
-              <button id="resume-button"> <span>Resume Typing</span></button>
+            <button id="resume-button"> <span>Resume Typing</span></button>
           </div>
 
         </div>
@@ -94,21 +106,31 @@
 
       <div id="restart-bar">
         <!-- Affiche "Restart Test" si test en cours ou terminé-->
-        <button id="restart-button">
+        <span class="selectable">
+          <button id="restart-button">
           <span>Restart Test</span>
           <img id="icon-restart" src="./assets/images/icon-restart.svg" />
         </button>
+        </span>
       </div>
       
       <dialog id="complete-popup" closedby="any">
-        <!-- Test Complete Start -->
-        Test Complete!
-        Solid run. Keep pushing to beat your high score.
-
-        <p class="score">WPM: <span id="wpm-final-score"></span></p>
-        <p class="score">Accuracy: <span id="acc-final-score"></span></p>
-        <!--TODO: mistakes en rouge souligné-->
-        <p class="score">Characters (typed / <span>mistakes</span>): <span id="typed-final-score"></span> /  <span id="mistakes-final-score"></span> </p>
+        <img src="./assets/images/pattern-star-1.svg" id="star-1">
+        <img src="./assets/images/pattern-star-2.svg" id="star-2">
+        <div id="dialog-grid">
+          <!-- Test Complete Start -->
+          <div id="dialog-title">
+            <img src="./assets/images/icon-completed.svg">
+            <h1>Test Complete!</h1>
+            <p>Solid run. Keep pushing to beat your high score.</p>
+          </div>
+          
+          <div id="dialog-scores">
+            <p class="score">WPM: <span id="wpm-final-score" class="score-value">-</span></p>
+            <p class="score">Accuracy: <span id="acc-final-score" class="score-value red">-</span></p>
+            <p class="score">Characters: <span id="typed-final-score" class="score-value green">-</span><span class="score-value">/</span><span id="mistakes-final-score" class="score-value red">-</span> </p>
+          </div>
+        </div>
       </dialog>
     </main>
   </div>

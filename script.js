@@ -127,6 +127,23 @@ const data = {
   ]
 }
 
+
+const dialogMessages = {
+  "default": {
+    "title" : "Test Complete!",
+    "text"  : "Solid run. Keep pushing to beat your high score.",
+  },
+  "baseline": {
+    "title": "Baseline established!",
+    "text": "You've set the bar. Now the real challenge begins - time to beat it."
+  },
+  "pb": {
+    "title": "High Score Smashed!",
+    "text": "You're getting faster. That was incredible typing."
+  }
+}
+
+
 function storageAvailable(type) {
   try {
     var storage = window[type],
@@ -151,6 +168,7 @@ function storageAvailable(type) {
     );
   }
 }
+
 
 const timeManager = {
   time: 0,
@@ -240,6 +258,7 @@ const game = {
   typed: 0,
   mistakes: 0,
   mistakesPermanent: 0,
+  totalPlayed: 0,
 
   /**
    * Replaces the current text of the #text-model element with
@@ -411,12 +430,8 @@ const game = {
     game.typed = 0
     game.mistakes = 0
     game.mistakesPermanent = 0
-    if (storageAvailable("localStorage")) {
-      if (localStorage.getItem("pbWpm")) {
-        game.pb = localStorage.getItem("pbWpm")
-      }
-      document.querySelector("#pb-wpm-score").textContent = game.pb
-    }
+    // Pb and totalTyped set on window load
+
     game.generateTextModel()
 
   /**
@@ -450,24 +465,60 @@ const game = {
 
   },
 
+  changeEndPopup(scenario){
+    switch (scenario) {
+      case "default":
+        document.querySelector("#dialog-title h1").textContent = dialogMessages.default.title
+        document.querySelector("#dialog-title p").textContent = dialogMessages.default.text
+        document.querySelector("#dialog-title img").src = "./assets/images/icon-completed.svg"
+        break
+      case "baseline":
+        document.querySelector("#dialog-title h1").textContent = dialogMessages.baseline.title
+        document.querySelector("#dialog-title p").textContent = dialogMessages.baseline.text
+        document.querySelector("#dialog-title img").src = "./assets/images/icon-completed.svg"
+        break
+      case "pb":
+        // TODO : confetti animation
+        document.querySelector("#dialog-title h1").textContent = dialogMessages.pb.title
+        document.querySelector("#dialog-title p").textContent = dialogMessages.pb.text
+        document.querySelector("#dialog-title img").src = "./assets/images/icon-new-pb.svg"
+        break
+      default:
+        console.error("Error: unknown game end scenario")
+        return
+    }
+  },
   endGame() {
     console.log("Debug: game ended")
     this.gameState = "off"
+
+    if (storageAvailable("localStorage")) {
+      localStorage.setItem("totalPlayed", ++this.totalPlayed)
+    }
 
     // Updating dialog box with stats
     document.querySelector("#wpm-final-score").textContent = this.computeFinalWpm()
     document.querySelector("#acc-final-score").textContent = this.computeAccuracy()
     document.querySelector("#typed-final-score").textContent = this.typed
     document.querySelector("#mistakes-final-score").textContent = this.mistakesPermanent
-    document.querySelector("#complete-popup").showModal()
 
     // Update PB if needed
     if (this.pb < this.computeFinalWpm()) {
       console.log("Debug: New PB score")
+
       this.pb = this.computeFinalWpm()
-      localStorage.setItem("pbWpm", this.pb)
+      if (storageAvailable("localStorage")) {
+        localStorage.setItem("pbWpm", this.pb)
+      }
       document.querySelector("#pb-wpm-score").textContent = this.pb
+      this.changeEndPopup("pb")
+    } else {
+      this.changeEndPopup("default")
     }
+    if (this.totalPlayed==1) {
+      this.changeEndPopup("baseline")
+    }
+    document.querySelector("#complete-popup").showModal()
 
     this.resetGame()
   }
@@ -511,6 +562,15 @@ window.addEventListener("load", () => {
       }
     })
     
+  // Loading game stats from localStorage
+  if (storageAvailable("localStorage")) {
+    const savedPb = localStorage.getItem("pbWpm")
+    const savedTotalPlayed = localStorage.getItem("totalPlayed")
+    game.pb = savedPb ? savedPb : 0
+    game.totalPlayed = savedTotalPlayed ? savedTotalPlayed : 0
+  }
+  document.querySelector("#pb-wpm-score").textContent = game.pb
+
   // Game ends when clicking on restart
   document.querySelector("#restart-button").addEventListener("click", game.resetGame)
   document.querySelector("#restart-bar").style.display = "none"
@@ -545,8 +605,8 @@ window.addEventListener("load", () => {
   })
 })
 
-// TODO: changer style boutons according to design folder
 // TODO: customiser dialog box pour baseline established
 // TODO: customiser dialog box pour nouvel high score
 // TODO: customiser dialog box style par defaut
 // TODO: faire style css pour mobile
+// TODO: revoir cohérence entre states (timer, jeu)
