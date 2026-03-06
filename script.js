@@ -127,14 +127,42 @@ const data = {
   ]
 }
 
+function storageAvailable(type) {
+  try {
+    var storage = window[type],
+      x = "__storage_test__";
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (e) {
+    return (
+      e instanceof DOMException &&
+      // everything except Firefox
+      (e.code === 22 ||
+        // Firefox
+        e.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        e.name === "QuotaExceededError" ||
+        // Firefox
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage.length !== 0
+    );
+  }
+}
+
 const timeManager = {
   time: 0,
   ellapsed: 0,
+  timerTimeout: 0,
   timerInterval: 0,
+  refreshInterval: 0,
+  onTimeout: null, // function to execute on timeout
 
   changeTimeShown(showEllapsed, newTime) {
     let timeShown = this.ellapsed
-    if (!showEllapsed) { // if ellapsed time is show no update to the time variable
+    if (!showEllapsed) { // if ellapsed time is shown no update to the time variable
       this.time = newTime
       timeShown = this.time
     }
@@ -143,25 +171,46 @@ const timeManager = {
   },
   refreshOverTime() {
     if (this.time>0) {
-      const intervalId = setInterval(() => {
+      const refreshInterval = setInterval(() => {
         this.changeTimeShown(false, this.time-1)
         if (this.time <= 0) {
-          clearInterval(intervalId)
+          clearInterval(refreshInterval)
         }
       }, 1000)
+      this.refreshInterval = refreshInterval
     }
   },
   setTimeOut(func) {
+    this.onTimeout = func
     this.startTimer(false)
     this.refreshOverTime()
-    const timeoutId = setTimeout(() => {
+    const timerTimeout = setTimeout(() => {
       this.stopTimer()
       func()
-      clearTimeout(timeoutId)
+      clearTimeout(timerTimeout)
     }, this.time*1000)
+    this.timerTimeout = timerTimeout
   },
+  cancelTimeout() {
+    clearTimeout(this.timerTimeout)
+    this.stopTimer()
+    this.timerTimeout = 0
+  },
+
+  // For pausing/resuming the game
+  pauseTimeout() {
+    clearTimeout(this.timerTimeout)
+    clearInterval(this.refreshInterval)
+    this.ellapsed = this.stopTimer()
+    this.timerTimeout = 0
+  },
+  resumeTimeout() {
+    this.setTimeOut(timeManager.onTimeout)
+  },
+
+  // for couting time ellapsed since the start
   startTimer(doShow) {
-    this.timerInterval = setInterval(() => {
+    const timerInterval = setInterval(() => {
       ++this.ellapsed
 
       console.log(this.ellapsed)
@@ -170,6 +219,7 @@ const timeManager = {
         this.changeTimeShown(true, -1)
       }
     }, 1000)
+    this.timerInterval = timerInterval
   },
   stopTimer() {
     const ellapsedTime = this.ellapsed
@@ -179,8 +229,6 @@ const timeManager = {
   }
 }
 
-
-const gameEndEvent = new Event("gameEnd")
 
 const game = {
   gameState: "off",
@@ -315,7 +363,6 @@ const game = {
         case "passage":
           game.modeTime = timeManager.stopTimer()
           game.endGame()
-          document.dispatchEvent(gameEndEvent)
           break
         default:
           console.error("Error: onInputTextTyped: invalid game.mode value")
@@ -332,7 +379,6 @@ const game = {
       buttons.classList.add("settings-disabled")
     })
 
-    // TODO : Show restart button
     document.querySelector("#restart-bar").style.display = ""
 
     const textTyped = document.querySelector("#text-typed")
@@ -344,7 +390,6 @@ const game = {
       // One way to remove an event listener: 
       timeManager.setTimeOut(() => {
         this.endGame()
-        document.dispatchEvent(gameEndEvent)
       })
     } else { // Passage mode
       timeManager.startTimer(true)
@@ -352,21 +397,51 @@ const game = {
     textTyped.addEventListener("input", game.onInputTextTyped)
   },
 
-  resetGame() {
+  resetGame: function () {
+    game.gameState = "off"
+
+    /**
+     * Initializing on game load
+     */
+
     // Resetting game stats and variables (also used for initialisation)
-    this.difficulty = document.querySelector("div.settings input[name='difficulty']:checked").value
-    this.mode = document.querySelector("div.settings input[name='mode']:checked").value>0 ? "timed" : "passage"
-    this.passageEnd = false
-    this.typed = 0
-    this.mistakes = 0
-    this.mistakesPermanent = 0
+    game.difficulty = document.querySelector("div.settings input[name='difficulty']:checked").value
+    game.mode = document.querySelector("div.settings input[name='mode']:checked").value>0 ? "timed" : "passage"
+    game.passageEnd = false
+    game.typed = 0
+    game.mistakes = 0
+    game.mistakesPermanent = 0
+    if (storageAvailable("localStorage")) {
+      if (localStorage.getItem("pbWpm")) {
+        game.pb = localStorage.getItem("pbWpm")
+      }
+      document.querySelector("#pb-wpm-score").textContent = game.pb
+    }
+    game.generateTextModel()
+
+  /**
+   * Resetting after game finished / after restart
+   */
+
+    // Removing every event added in startGame
+    document.querySelector("#text-typed").removeEventListener("input", game.onInputTextTyped)
+
+    // Disable "resume" overlay
+    document.querySelector("#resume-msg").style.display = "none"
+    // Disable text area
+    document.querySelector("#text-typed").disabled = true
+
+    // Enable settings buttons
+    document.querySelectorAll(".settings").forEach((buttons) => {
+      buttons.classList.remove("settings-disabled")
+    })
 
     // Resetting stats and text
     document.querySelector("#wpm-score").textContent = "-"
     document.querySelector("#acc-score").textContent = "-"
-    this.generateTextModel()
     // Shown time goes back to selected value
     timeManager.changeTimeShown(false, document.querySelector("div.settings input[name='mode']:checked").value)
+    timeManager.cancelTimeout()
     // "Restart Test" button hidden
     document.querySelector("#restart-bar").style.display = "none"
     // Blur comes back on the text area
@@ -375,35 +450,23 @@ const game = {
 
   },
 
-  // TODO : ne pas resetGame tant que dialog box affichée
   endGame() {
     console.log("Debug: game ended")
     this.gameState = "off"
 
-    const textTyped = document.querySelector("#text-typed")
-    
-    // Removing every event added in startGame
-    textTyped.removeEventListener("input", game.onInputTextTyped)
-
-    // Disable text area
-    document.querySelector("#text-typed").disabled = true
-    
-    // Enable settings buttons
-    document.querySelectorAll(".settings").forEach((buttons) => {
-      buttons.classList.remove("settings-disabled")
-    })
-
     // Updating dialog box with stats
     document.querySelector("#wpm-final-score").textContent = this.computeFinalWpm()
     document.querySelector("#acc-final-score").textContent = this.computeAccuracy()
-    document.querySelector("#char-final-score").textContent = this.typed
+    document.querySelector("#typed-final-score").textContent = this.typed
+    document.querySelector("#mistakes-final-score").textContent = this.mistakesPermanent
     document.querySelector("#complete-popup").showModal()
 
     // Update PB if needed
-    if (parseInt(document.querySelector("#pb-wpm-score").textContent) < this.computeFinalWpm()) {
+    if (this.pb < this.computeFinalWpm()) {
       console.log("Debug: New PB score")
       this.pb = this.computeFinalWpm()
-      document.querySelector("#pb-wpm-score").textContent = this.computeFinalWpm()
+      localStorage.setItem("pbWpm", this.pb)
+      document.querySelector("#pb-wpm-score").textContent = this.pb
     }
 
     this.resetGame()
@@ -449,8 +512,9 @@ window.addEventListener("load", () => {
     })
     
   // Game ends when clicking on restart
-  document.querySelector("#restart-bar").addEventListener("click", game.resetGame)
-  
+  document.querySelector("#restart-button").addEventListener("click", game.resetGame)
+  document.querySelector("#restart-bar").style.display = "none"
+
   // Game start when clicking on the area
   const startMsg = document.querySelector("#start-msg")
   startMsg.addEventListener("click", () => {
@@ -463,15 +527,26 @@ window.addEventListener("load", () => {
   // Toggles blur if text area loses focus
   const resumeMsg = document.querySelector("#resume-msg")
   resumeMsg.addEventListener("click", () => {
-    if (game.gameState === "start") { // blur only takes effect if game is ongoing
+    if (game.gameState === "start") {
+      if (game.mode === "timed") {
+        timeManager.resumeTimeout()
+      } else {
+        timeManager.startTimer(true)
+      }
       resumeMsg.style.display = "none"
       textTyped.focus()
     }
   })
   textTyped.addEventListener("blur", () => {
     if (game.gameState === "start") {
+      timeManager.pauseTimeout()
       resumeMsg.style.display = "grid"
     }
   })
 })
 
+// TODO: changer style boutons according to design folder
+// TODO: customiser dialog box pour baseline established
+// TODO: customiser dialog box pour nouvel high score
+// TODO: customiser dialog box style par defaut
+// TODO: faire style css pour mobile

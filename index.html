@@ -83,7 +83,7 @@
         </div>
 
         <p id="text-model"></p>
-        <textarea spellcheck="false" id="text-typed"></textarea>
+        <textarea spellcheck="false" id="text-typed" disabled ></textarea>
 
         <!-- le passage de doit pas faire la page dépasser de l'écran: ajouter "..." à la fin
          si passage non terminé ET faire défiler vers le bas pour permettre d"éviter cela -->
@@ -102,13 +102,13 @@
       
       <dialog id="complete-popup" closedby="any">
         <!-- Test Complete Start -->
-        <!-- dialog avec bouton ramenant sur page de départ -->
         Test Complete!
         Solid run. Keep pushing to beat your high score.
 
         <p class="score">WPM: <span id="wpm-final-score"></span></p>
         <p class="score">Accuracy: <span id="acc-final-score"></span></p>
-        <p class="score">Characters: <span id="char-final-score"></span></p>
+        <!--TODO: mistakes en rouge souligné-->
+        <p class="score">Characters (typed / <span>mistakes</span>): <span id="typed-final-score"></span> /  <span id="mistakes-final-score"></span> </p>
       </dialog>
     </main>
   </div>

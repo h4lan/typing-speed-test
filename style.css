@@ -301,9 +301,7 @@ header {
 }
 
 /* Restart button */
-
 #restart-bar {
-    display: none;
     margin-top: 1em;
     text-align: center;
 }
