@@ -128,22 +128,6 @@ const data = {
 }
 
 
-const dialogMessages = {
-  "default": {
-    "title" : "Test Complete!",
-    "text"  : "Solid run. Keep pushing to beat your high score.",
-  },
-  "baseline": {
-    "title": "Baseline established!",
-    "text": "You've set the bar. Now the real challenge begins - time to beat it."
-  },
-  "pb": {
-    "title": "High Score Smashed!",
-    "text": "You're getting faster. That was incredible typing."
-  }
-}
-
-
 function storageAvailable(type) {
   try {
     var storage = window[type],
@@ -466,22 +450,17 @@ const game = {
   },
 
   changeEndPopup(scenario){
+    document.querySelector("#dialog-grid").classList.remove("established");
+    document.querySelector("#dialog-grid").classList.remove("new-pb");
     switch (scenario) {
       case "default":
-        document.querySelector("#dialog-title h1").textContent = dialogMessages.default.title
-        document.querySelector("#dialog-title p").textContent = dialogMessages.default.text
-        document.querySelector("#dialog-title img").src = "./assets/images/icon-completed.svg"
         break
       case "baseline":
-        document.querySelector("#dialog-title h1").textContent = dialogMessages.baseline.title
-        document.querySelector("#dialog-title p").textContent = dialogMessages.baseline.text
-        document.querySelector("#dialog-title img").src = "./assets/images/icon-completed.svg"
+        document.querySelector("#dialog-grid").classList.add("established")
         break
       case "pb":
         // TODO : confetti animation
-        document.querySelector("#dialog-title h1").textContent = dialogMessages.pb.title
-        document.querySelector("#dialog-title p").textContent = dialogMessages.pb.text
-        document.querySelector("#dialog-title img").src = "./assets/images/icon-new-pb.svg"
+        document.querySelector("#dialog-grid").classList.add("new-pb")
         break
       default:
         console.error("Error: unknown game end scenario")
@@ -605,8 +584,5 @@ window.addEventListener("load", () => {
   })
 })
 
-// TODO: customiser dialog box pour baseline established
-// TODO: customiser dialog box pour nouvel high score
-// TODO: customiser dialog box style par defaut
 // TODO: faire style css pour mobile
 // TODO: revoir cohérence entre states (timer, jeu)

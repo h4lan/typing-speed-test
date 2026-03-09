@@ -3,6 +3,7 @@
 :root {
     --bg-color: hsl(0, 0%, 7%);
     --border: hsl(0, 0%, 15%);
+    --next-char-bg: hsl(0, 0%, 22%);
     --labels: hsl(240, 3%, 46%);
     --test-text-color: hsl(240, 1%, 59%);
     --wpm-color: hsl(0, 0%, 100%);
@@ -271,7 +272,7 @@ header {
 }
 
 #next-char {
-    background-color: var(--border);
+    background-color: var(--next-char-bg);
 }
 
 /* Start button */
@@ -369,41 +370,79 @@ dialog {
     border-radius: 20px;
 }
 
-dialog div {
+#dialog-grid {
     display: grid;
     text-align: center;
     justify-content: center;
     grid-template-rows: 2fr 1fr;
-    padding: 1em;
-}
-
-dialog > img {
-    position: absolute;
 }
 
 #star-1 {
-    top: 180px;
-    right: 25px;
+    position: absolute;
+    top: 30%;
+    right: 3%;
 }
 
 #star-2 {
-    left: 45px;
-    top: 70px;
+    position: absolute;
+    left: 8%;
+    top: 13%;
 }
 
 #dialog-title {
     grid-area: 1;
     display: block;
-
-    img {
-        margin: 2.4em;
-    }
-
+    margin: 2em auto;
     h1 {
         margin-bottom: 0px;
     }
 }
 
+#completed-bg {
+    padding: 0.6em;
+    background-color: rgb(from var(--green) r g b / 0.25);
+    clip-path: circle(at center);
+}
+
+#completed-bg-larger {
+    padding: 0.8em;
+    margin-top: 1.5em;
+    background-color: rgb(from var(--green) r g b / 0.1);
+    clip-path: circle(at center);
+}
+
+#baseline-text {
+    display: none;
+}
+
+#dialog-new-pb {
+    display: none;
+
+    #new-pb-img {
+        margin: 1.4em auto;
+    }
+}
+
+#dialog-grid.established {
+    #dialog-completed #complete-text {
+        display: none;
+    }
+
+    #dialog-completed #baseline-text {
+        display: inherit;
+    }
+}
+
+#dialog-grid.new-pb {
+    #dialog-completed {
+        display: none;
+    }
+
+    #dialog-new-pb {
+        display: inherit;
+    }
+
+}
 #dialog-scores {
     display: flex;
     flex-direction: row;
