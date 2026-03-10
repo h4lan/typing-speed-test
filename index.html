@@ -19,18 +19,23 @@
     <header>
       <!-- remplacer par logo-small sur petit ecran -->
       <img id="header-logo" src="assets/images/logo-large.svg"/>
+      <img id="header-logo-small" src="assets/images/logo-small.svg"/>
 
       <p id ="pb">
         <img id="pb-img" src="assets/images/icon-personal-best.svg" />
-        Personal best: <span id="pb-wpm" class="sora-bold"> <span id="pb-wpm-score">0</span> WPM</span>
+        <span id="pb-text">Personal best:</span> <span id="pb-text-small-screen">Best:</span>
+        <span id="pb-wpm" class="sora-bold"> <span id="pb-wpm-score">0</span> WPM</span>
       </p>
     </header>
 
     <main>
       <div id="before-test">
         <div id="scores">
+          <!-- TODO: vaut mieux mettre des divs vides entre les <p> pour faire les séparations -->
           <p>WPM: <span id="wpm-score" class="score-value red">-</span></p>
+          <div class="divider"></div>
           <p>Accuracy: <span id="acc-score" class="score-value green">-</span></p>
+          <div class="divider"></div>
           <p>Time: <span id="time" class="score-value yellow last-score">0:00</span></p>
         </div>
         
@@ -143,9 +148,21 @@
           </div>
           
           <div id="dialog-scores">
-            <p class="score">WPM: <span id="wpm-final-score" class="score-value">-</span></p>
-            <p class="score">Accuracy: <span id="acc-final-score" class="score-value red">-</span></p>
-            <p class="score">Characters: <span id="typed-final-score" class="score-value green">-</span><span class="score-value">/</span><span id="mistakes-final-score" class="score-value red">-</span> </p>
+            <!-- Maybe I could have used <dd> and <dl> elements here -->
+            <p class="score">
+              <span>WPM:</span>
+              <span id="wpm-final-score" class="score-value white">-</span>
+            </p>
+            <p class="score">
+              <span>Accuracy:</span>
+              <span id="acc-final-score" class="score-value red">-</span>
+            </p>
+            <p class="score">
+              <span>Characters </span>
+              <span>
+                <span id="typed-final-score" class="score-value green">-</span><span class="score-value">/</span><span id="mistakes-final-score" class="score-value red">-</span>
+              </span>
+            </p>
           </div>
         </div>
       </dialog>

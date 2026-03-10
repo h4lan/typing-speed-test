@@ -585,4 +585,5 @@ window.addEventListener("load", () => {
 })
 
 // TODO: faire style css pour mobile
+// TODO: animation confettis si pb battu
 // TODO: revoir cohérence entre states (timer, jeu)
