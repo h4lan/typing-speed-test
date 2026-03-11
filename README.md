@@ -1,162 +1,166 @@
-# Frontend Mentor - Typing Speed Test
+# Frontend Mentor - Typing Speed Test solution
 
-![Design preview for the Typing Speed Test coding challenge](./preview.jpg)
+This is a solution to the [Typing Speed Test challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/typing-speed-test). Frontend Mentor challenges help you improve your coding skills by building realistic projects. 
 
-## Welcome! 👋
+## Table of contents
 
-Thanks for checking out this front-end coding challenge.
+- [Overview](#overview)
+  - [The challenge](#the-challenge)
+  - [Screenshot](#screenshot)
+  - [Links](#links)
+- [My process](#my-process)
+  - [Built with](#built-with)
+  - [What I learned](#what-i-learned)
+  - [Continued development](#continued-development)
+  - [Useful resources](#useful-resources)
+  - [AI Collaboration](#ai-collaboration)
+- [Author](#author)
+- [Acknowledgments](#acknowledgments)
 
-[Frontend Mentor](https://www.frontendmentor.io) challenges help you improve your coding skills by building realistic projects.
+**Note: Delete this note and update the table of contents based on what sections you keep.**
 
-**To do this challenge, you need a good understanding of HTML, CSS and JavaScript.**
+## Overview
 
-## The challenge
+### The challenge
 
-Your challenge is to build out this typing speed test app and get it looking as close to the design as possible.
+Users should be able to:
 
-You can use any tools you like to help you complete the challenge. So if you've got something you'd like to practice, feel free to give it a go.
+- View the optimal layout for the interface depending on their device's screen size
+- See hover and focus states for all interactive elements on the page
 
-We store the passage data in a local `data.json` file. You can use that to randomly select passages of varying difficulty.
+### Screenshot
 
-Your users should be able to:
+![](./screenshot.jpg)
 
-#### Test Controls
+### Links
 
-- Start a test by clicking the start button or by clicking the passage and typing
-- Select a difficulty level (Easy, Medium, Hard) for passages of varying complexity
-- Switch between "Timed (60s)" mode and "Passage" mode (timer counts up, no limit)
-- Restart at any time to get a new random passage from the selected difficulty
+The app isn't currently hosted, but you can download the source files and try it for yourself.
 
-#### Typing Experience
+## My process
 
-- See real-time WPM, accuracy, and time stats while typing
-- See visual feedback showing correct characters (green), errors (red/underlined), and cursor position
-- Correct mistakes with backspace (original errors still count against accuracy)
+### Built with
 
-#### Results & Progress
+- Semantic HTML5 markup
+- CSS Flexbox, Grid and animations
+- Vanilla JS
 
-- View results showing WPM, accuracy, and characters (correct/incorrect) after completing a test
-- See a "Baseline Established!" message on their first test, setting their personal best
-- See a "High Score Smashed!" celebration with confetti when beating their personal best
-- Have their personal best persist across sessions via localStorage
+### What I learned
 
-#### UI & Responsiveness
+The main takeaway here would be all the CSS tricks I learned: I realized I was doing so much wrong - and a lot in this project still is to be honest - which is a feeling I love when coding.
 
-- View the optimal layout depending on their device's screen size
-- See hover and focus states for all interactive elements
+I feel like the following CSS code sums up pretty much the way I experienced with flexbox and grid: I got confused a lot when I realized I could just combine both, and it led to pretty satisfying results. I still hesitate when deciding when to use one or the other, but I think a good rule of thumb is: one should use grid when wanting the container to define the position of the elements, whereas using flexbox allow the children to define their position.  
 
-### Data Model
+```css
+body {
+    /* For the sticky footer */
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-template-rows: 1fr auto;
 
-A `data.json` file is provided with passages organized by difficulty. Each passage has the following structure:
-
-```json
-{
-  "id": "easy-1",
-  "text": "The sun rose over the quiet town. Birds sang in the trees as people woke up and started their day."
+    /*...*/
 }
 ```
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `id` | string | Unique identifier for the passage (e.g., "easy-1", "medium-3", "hard-10") |
-| `text` | string | The passage text the user will type |
+I almost lost it trying to code the test logic (and I now get why all my classmate trash JS every second they get). I'm pretty proud of how I modeled it in the HTML: an invisible textarea in front of a \<p> element. I inserted every letter of the paragraph inside a span so I could edit every letter individually.
 
-### Expected Behaviors
+```js
+checkModel(wasCharacterTyped) {
+    const textModel = document.querySelector("#text-model")
+    const textTyped = document.querySelector("#text-typed").value
+    const nextCharIdx = textTyped.length
 
-- **Starting the test**: The timer begins when the user starts typing or clicks the start button. Clicking directly on the passage text and typing also initiates the test
-- **Timed mode**: 60-second countdown. Test ends when timer reaches 0 or passage is completed
-- **Passage mode**: Timer counts up with no limit. Test ends when the full passage is typed
-- **Error handling**: Incorrect characters are highlighted in red with an underline. Backspace allows corrections, but errors still count against accuracy
-- **Results logic**:
-  - First completed test: "Baseline Established!" - sets initial personal best
-  - New personal best: "High Score Smashed!" with confetti animation
-  - Normal completion: "Test Complete!" with encouragement message
+    if (nextCharIdx <= textModel.textContent.length) {
+    // Remove the styling on the previous character and apply it onto the new one
+      const previousChar = document.querySelector("#next-char")
+      const nextChar = textModel.children[nextCharIdx]
 
-### Data Persistence
+      const typedChar = textTyped.charAt(nextCharIdx-1)
 
-The personal best score should persist across browser sessions using `localStorage`. When a user beats their high score, the new value should be saved and displayed on subsequent visits.
+      // Resetting the next-char style
+      previousChar.id = ""
+      previousChar.classList.remove("correct", "incorrect")
 
-### Want some support on the challenge? 
+      // Check if we just wrote or deleted
+      if (previousChar.nextElementSibling === nextChar) { // if we just wrote...
+        if (wasCharacterTyped) {
+          this.typed++
+        }
+        // Check if the character corresponds
+        if (typedChar === previousChar.textContent) {
+          previousChar.classList.add("correct")
+        } else {
+          this.mistakes++
+          this.mistakesPermanent++
+          previousChar.classList.add("incorrect")
+        }
+      } else {
+        if (nextChar.classList.contains("incorrect")) {
+          this.mistakes--
+        }
+      }
+      // Apply style to the next character to type 
+      nextChar.classList.remove("correct", "incorrect")
+      nextChar.id = "next-char"
 
-[Join our community](https://www.frontendmentor.io/community) and ask questions in the **#help** channel.
+      // Check if passage has ended
+      this.passageEnd = nextChar.classList.contains("end-of-text")
+    } else {
+      this.passageEnd = true
+    }
+  }
+```
 
-## Where to find everything
+I'm also pretty proud of the timer logic, and how I got the confetti animation to restart every time the \<dialog> opens again. 
 
-Your task is to build out the project to the designs inside the `/design` folder. You will find both a mobile and a desktop version of the design. 
+### Continued development
 
-The designs are in JPG static format. Using JPGs will mean that you'll need to use your best judgment for styles such as `font-size`, `padding` and `margin`. 
+The main thing I want to focus on during subsequent projects is modeling my app: its different states, the logic behind, using  a diagram. I feel like being able to think about the app before jumping into coding, would make it ten times easier to not get lost, especially when I get excited about an idea for a new functionality.
 
-If you would like the Figma design file to gain experience using professional tools and build more accurate projects faster, you can [subscribe as a PRO member](https://www.frontendmentor.io/pro).
+I really want to get into JS frameworks, especially Vue - since my friends convinced me so hard. And with that, I want to get better at writing JS clean code, just like experienced programmers do it. This means separating my code into key functions, only adding the necessary event listeners, and many other things I think I can pick up by reading open source code.
 
-All the required assets for this project are in the `/assets` folder. The images are already exported for the correct screen size and optimized.
+### Feedback Wanted
 
-We also include variable and static font files for the required fonts for this project. You can choose to either link to Google Fonts or use the local font files to host the fonts yourself. Note that we've removed the static font files for the font weights that aren't needed for this project.
+These are the main areas I would like feedback on, and questions I would like answers to, from the POV of a more experienced programmer than me. Thanks in advance.
 
-There is also a `style-guide.md` file containing the information you'll need, such as color palette and fonts.
+For JS:
+- Should I create functions directly in the global file and split the files into modules, instead of creating different objects just to hold methods or variables .
+- Should I store data in different JS/JSON files? If so, is there a way to access the data in a local JSON file without putting in into a JS file?
+- Is declaring global ``const`` elements a good practice (since it reduce the number of ``querySelector(...)`` calls) ?
+- Is using the ``DOMContentLoaded`` rather than ``load`` always better (since the former waits only for all the elements of the **current** page to load)
+- Is my code clean (enough), from the way I wrote functions inside objects to what each function/method holds ?
 
-## Using AI coding assistants
+### Challenges encountered
 
-We've included two files to help you if you're using AI coding assistants (like Claude, GitHub Copilot, Cursor, etc.) while working on this challenge:
+These are a few steps during which I struggled. I would also like feedback/answers for me to use during my next project:
 
-- `AGENTS.md` - Contains detailed instructions for AI assistants on how to help you with this challenge. It's tailored to this challenge's difficulty level, so the AI will provide guidance appropriate to your learning stage—offering more support for beginner challenges and encouraging more independence on advanced ones.
-- `CLAUDE.md` - A pointer file that directs Claude-based tools to the AGENTS.md instructions.
+Where I did not find solutions:
+- **Stopping the "Resume game" button from showing for a fraction of a second when the "Restart" button is clicked.** My guess is I would have to change when the "Resume game" overlay shows.
+- **Customizing a dropdown menu for the settings in the mobile layout, using a \<select> element and supported CSS properties only.** My guess is I should not use \<select>, but a button showing/hiding a div, and style that div to look like the desired design.
+- **Directly accessing data in the JSON file.** I put it directly in the script.js file.
+- **Limiting the height of the page to only the screen: no overflow, no scroll bar if the text is too long.**
+- **Changing the "Test Completed!" dialog box on a classic screen, to a fullscreen message on a mobile screen.**
 
-**How to use them:** You don't need to do anything! These files are automatically detected by most AI coding tools. The AI will read them and adjust its behavior to be a better learning partner—guiding you toward solutions rather than just giving you the answers.
+Where I did solve the problem:
+- **Game logic - removing the styles (color, underline) applied to characters that were deleted.** I solved it by using the ``event.data`` attribute, showing which key triggered the event. 
+- **Preventing the using from selecting text with his mouse, or using shortcuts.**
 
-**Note:** These files are designed to help you *learn*, not to do the work for you. The AI is instructed to ask questions, give hints, and explain concepts rather than writing complete solutions.
+### Useful resources
 
-## Building your project
+- [CSS Tricks guides](https://css-tricks.com/complete-guide-css-grid-layout/) - This helped me grasp how grid works pretty quickly, and works as a good cheat sheet.
 
-Feel free to use any workflow that you feel comfortable with. Below is a suggested process, but do not feel like you need to follow these steps:
+### AI Collaboration
 
-1. Initialize your project as a public repository on [GitHub](https://github.com/). Creating a repo will make it easier to share your code with the community if you need help. If you're not sure how to do this, [have a read-through of this Try Git resource](https://try.github.io/).
-2. Configure your repository to publish your code to a web address. This will also be useful if you need some help during a challenge as you can share the URL for your project with your repo URL. There are a number of ways to do this, and we provide some recommendations below.
-3. Look through the designs to start planning out how you'll tackle the project. This step is crucial to help you think ahead for CSS classes to create reusable styles.
-4. Before adding any styles, structure your content with HTML. Writing your HTML first can help focus your attention on creating well-structured content.
-5. Write out the base styles for your project, including general content styles, such as `font-family` and `font-size`.
-6. Start adding styles to the top of the page and work down. Only move on to the next section once you're happy you've completed the area you're working on.
+Describe how you used AI tools (if any) during this project. This helps demonstrate your ability to work effectively with AI assistants.
 
-## Deploying your project
+- I only used Gemini Pro
+- I don't like using AI when learning such basic aspects of programming (here it would be vanilla JS): for me it's like using AI to learn how to talk, it sounds stupid. I prefer to pre-prompt it and limit it to behave like a better search engine: instead of googling something for 1 hour, I ask it a question and it gives me ressources without coding.
 
-As mentioned above, there are many ways to host your project for free. Our recommend hosts are:
+## Author
 
-- [GitHub Pages](https://pages.github.com/)
-- [Vercel](https://vercel.com/)
-- [Netlify](https://www.netlify.com/)
+- Github - [h4lan](https://github.com/h4lan)
+- Linkedin - [Halan Ouensanga](https://www.linkedin.com/in/halan-ouensanga/)
 
-You can host your site using one of these solutions or any of our other trusted providers. [Read more about our recommended and trusted hosts](https://medium.com/frontend-mentor/frontend-mentor-trusted-hosting-providers-bf000dfebe).
+## Acknowledgments
 
-## Create a custom `README.md`
-
-We strongly recommend overwriting this `README.md` with a custom one. We've provided a template inside the [`README-template.md`](./README-template.md) file in this starter code.
-
-The template provides a guide for what to add. A custom `README` will help you explain your project and reflect on your learnings. Please feel free to edit our template as much as you like.
-
-Once you've added your information to the template, delete this file and rename the `README-template.md` file to `README.md`. That will make it show up as your repository's README file.
-
-## Submitting your solution
-
-Submit your solution on the platform for the rest of the community to see. Follow our ["Complete guide to submitting solutions"](https://medium.com/frontend-mentor/a-complete-guide-to-submitting-solutions-on-frontend-mentor-ac6384162248) for tips on how to do this.
-
-Remember, if you're looking for feedback on your solution, be sure to ask questions when submitting it. The more specific and detailed you are with your questions, the higher the chance you'll get valuable feedback from the community.
-
-## Sharing your solution
-
-There are multiple places you can share your solution:
-
-1. Share your solution page in the **#finished-projects** channel of our [community](https://www.frontendmentor.io/community). 
-2. Tweet [@frontendmentor](https://twitter.com/frontendmentor) and mention **@frontendmentor**, including the repo and live URLs in the tweet. We'd love to take a look at what you've built and help share it around.
-3. Share your solution on other social channels like LinkedIn.
-4. Blog about your experience building your project. Writing about your workflow, technical choices, and talking through your code is a brilliant way to reinforce what you've learned. Great platforms to write on are [dev.to](https://dev.to/), [Hashnode](https://hashnode.com/), and [CodeNewbie](https://community.codenewbie.org/).
-
-We provide templates to help you share your solution once you've submitted it on the platform. Please do edit them and include specific questions when you're looking for feedback. 
-
-The more specific you are with your questions the more likely it is that another member of the community will give you feedback.
-
-## Got feedback for us?
-
-We love receiving feedback! We're always looking to improve our challenges and our platform. So if you have anything you'd like to mention, please email hi[at]frontendmentor[dot]io.
-
-This challenge is completely free. Please share it with anyone who will find it useful for practice.
-
-**Have fun building!** 🚀
+Me, myself and I ;).

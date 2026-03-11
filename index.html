@@ -16,8 +16,8 @@
   <script src="script.js"></script>
 
   <div id="content">
+    <!-- Logo and WPM personal best -->
     <header>
-      <!-- remplacer par logo-small sur petit ecran -->
       <img id="header-logo" src="assets/images/logo-large.svg"/>
       <img id="header-logo-small" src="assets/images/logo-small.svg"/>
 
@@ -29,9 +29,9 @@
     </header>
 
     <main>
+      <!-- Current score and settings bar -->
       <div id="before-test">
         <div id="scores">
-          <!-- TODO: vaut mieux mettre des divs vides entre les <p> pour faire les séparations -->
           <p>WPM: <span id="wpm-score" class="score-value red">-</span></p>
           <div class="divider"></div>
           <p>Accuracy: <span id="acc-score" class="score-value green">-</span></p>
@@ -39,56 +39,61 @@
           <p>Time: <span id="time" class="score-value yellow last-score">0:00</span></p>
         </div>
         
-        <div class="settings">
-          <p>Difficulty:</p>
-          <label>
-            <input type="radio" name="difficulty" value="easy" checked></input>
-            <span class="selectable">
-              <span class="setting-value">Easy</span>
-            </span>
-          </label>
-          <label>
-            <input type="radio" name="difficulty" value="medium"></input>
-            <span class="selectable">
-              <span class="setting-value">Medium</span>
-            </span>
-          </label>
-          <label class="separated">
-            <input type="radio" name="difficulty" value="hard"></input>
-            <span class="selectable">
-              <span class="setting-value">Hard</span>
-            </span>
-          </label>
-        </div>
+        <form id="settings-form">
+          <div class="settings">
+            <p>Difficulty:</p>
+            <label>
+              <input type="radio" name="difficulty" value="easy" checked></input>
+              <span class="selectable setting-value">Easy</span>
+            </label>
+            <label>
+              <input type="radio" name="difficulty" value="medium"></input>
+              <span class="setting-value selectable">Medium</span>
+            </label>
+            <label>
+              <input type="radio" name="difficulty" value="hard"></input>
+              <span class="setting-value selectable">Hard</span>
+            </label>
+          </div>
 
-        <div class="settings">
-          <p>Mode:</p>
-          <label>
-            <input type="radio" name="mode" value="60"></input>
-            <span class="selectable">
-              <span class="setting-value">Timed (60s)</span>
-            </span>
-          </label>
-          <label>
-            <input type="radio" name="mode" value="0" checked></input>
-            <span class="selectable">
-              <span class="setting-value">Passage</span>
-            </span>
-          </label>
-        </div>
+          <div class="divider"></div>
+
+          <div class="settings">
+            <p>Mode:</p>
+            <label>
+              <input type="radio" name="mode" value="60"></input>
+              <span class="selectable setting-value">Timed (60s)</span>
+            </label>
+            <label>
+              <input type="radio" name="mode" value="0" checked></input>
+              <span class="selectable setting-value">Passage</span>
+            </label>
+          </div>
+
+          <div id="settings-mobile"> <!-- Shown only on mobile, replace other settings div -->
+            <select name="difficulty" id="difficulty-select">
+              <option id="difficulty-select-easy" value="easy" selected>Easy</option>
+              <option id="difficulty-select-medium" value="medium">Medium</option>
+              <option id="difficulty-select-hard" value="hard">Hard</option>
+            </select>
+            <select name="mode" id="mode-select">
+              <option id="mode-select-60" value="60">Timed (60s)</option>
+              <option id="mode-select-0" value="0" selected>Passage</option>
+            </select>
+          </div>
+        </form>
+        
+
       </div>
       
       <hr>
 
+      <!-- Typing area -->
       <div id="typing-test">
-        <!-- contient le passage, démarre test si click sur start button ou sur ce passage -->
         <div id="start-msg">
-          <!-- Affiche "Restart Test" si test en cours ou terminé-->
           <div id="start-msg-content">
-              <span class="selectable">
-                <button id="start-button"> <span>Start Typing Test</span> </button>
-              </span>
-              <p>Or click the text and start typing</p>
+            <button id="start-button" class="selectable"> <span>Start Typing Test</span> </button>
+            <p>Or click the text and start typing</p>
           </div>
         </div>
 
@@ -102,28 +107,23 @@
         <p id="text-model"></p>
         <textarea spellcheck="false" id="text-typed" disabled ></textarea>
 
-        <!-- le passage de doit pas faire la page dépasser de l'écran: ajouter "..." à la fin
-         si passage non terminé ET faire défiler vers le bas pour permettre d"éviter cela -->
-
       </div>
 
       <hr>
 
       <div id="restart-bar">
-        <!-- Affiche "Restart Test" si test en cours ou terminé-->
-        <span class="selectable">
-          <button id="restart-button">
+        <button id="restart-button" class="selectable">
           <span>Restart Test</span>
           <img id="icon-restart" src="./assets/images/icon-restart.svg" />
         </button>
-        </span>
       </div>
       
+      <!-- Test Complete Popup -->
       <dialog id="complete-popup" closedby="any">
         <img src="./assets/images/pattern-star-1.svg" id="star-1">
         <img src="./assets/images/pattern-star-2.svg" id="star-2">
+        <img src="./assets/images/pattern-confetti.svg" id="confetti">
         <div id="dialog-grid">
-          <!-- Test Complete Start -->
           <div id="dialog-completed">
             <div id="completed-bg-larger">
               <div id="completed-bg">
@@ -131,17 +131,18 @@
               </div>
             </div>
 
-            <div id="complete-text">
+            <div id="complete-text" class="dialog-title">
               <h1>Test Complete!</h1>
               <p>Solid run. Keep pushing to beat your high score.</p>
             </div>
-            <div id="baseline-text">
+            <div id="baseline-text" class="dialog-title">
               <h1>Baseline established!</h1>
               <p>You've set the bar. Now the real challenge begins - time to beat it.</p>
             </div>
           </div>
 
-          <div id="dialog-new-pb">
+          <!-- For PB -->
+          <div id="dialog-new-pb" class="dialog-title">
             <img src="./assets/images/icon-new-pb.svg" id="new-pb-img">
             <h1>High Score Smashed!</h1>
             <p>You're getting faster. That was incredible typing.</p>
@@ -168,9 +169,8 @@
       </dialog>
     </main>
   </div>
-  
+
   <footer>
-    <!-- Test Complete End -->
     <div class="attribution">
       Challenge by <a href="https://www.frontendmentor.io?ref=challenge">Frontend Mentor</a>. 
       Coded by <a href="https://github.com/h4lan">h4lan</a>.

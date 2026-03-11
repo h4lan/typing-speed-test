@@ -75,8 +75,13 @@ hr {
     border-style: solid;
 }
 
-button, .setting-value {
+button, .selectable {
     border-radius: 11px;
+}
+
+.selectable:hover {
+    cursor: pointer;
+    border-color: var(--mouse-over-setting);
 }
 
 .selectable:focus {
@@ -91,7 +96,6 @@ button, .setting-value {
 }
 
 /* Header */
-
 header {
     display: flex;
     flex-direction: row;
@@ -139,7 +143,7 @@ header {
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: 2.4ex 2ex;
+    gap: 4ex 2ex;
     margin-bottom: 2.5ex ; 
 }
 
@@ -160,17 +164,15 @@ header {
     gap: 2ex 1.8ex;
 }
 
+.divider {
+    height: stretch;
+    border: 1px solid var(--border);
+}
+
 .score-value {
-    padding-right: 1.2ex;
-    border-right: 1px solid var(--border);
     font-weight: 700;
     font-size: var(--score-value-size);
     vertical-align: middle;
-}
-
-.last-score {
-    padding: 0;
-    border: none;
 }
 
 /* Game settings */
@@ -182,11 +184,17 @@ header {
     justify-content: space-between;
 }
 
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.4ex 1ex;
+}
+
 .settings {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 2.4ex 1ex;
+    gap: 2.8ex 1ex;
     font-size: var(--label-size)
 }
 
@@ -195,14 +203,14 @@ header {
 }
 
 .settings input[type="radio"]:checked {
-    ~ .selectable .setting-value {
+    ~ .selectable {
         color: var(--selected-setting);
         border-color: var(--selected-setting);
     }    
 }
 
 .settings input[type="radio"]:active {
-    ~ .selectable .setting-value {
+    ~ .selectable {
         color: var(--mouse-over-setting)
     }    
 }
@@ -211,28 +219,22 @@ header {
     color: var(--wpm-color);
 }
 
-.separated {
-    border-right: 1px solid var(--border);
-    padding-right: 2ex
+.settings-disabled {
+    pointer-events: none;
+
+    .setting-value {
+        color: var(--labels);
+        border-color: var(--labels);
+    }
 }
 
 .setting-value {
-    padding: 0.5em;
+    padding: 0.8ex;
     border: 1px solid var(--labels);
 }
 
-.setting-value:hover {
-    cursor: pointer;
-    border-color: var(--mouse-over-setting);
-}
-
-.settings-disabled {
-    pointer-events: none;
-}
-
-.settings-disabled .setting-value {
-    color: var(--labels);
-    border-color: var(--labels);
+#settings-mobile {
+    display: none;
 }
 
 /* Test area */
@@ -380,17 +382,21 @@ dialog {
     border-radius: 20px;
     padding-left: 3em;
     padding-right: 3em;
+    width: 30%;
+    min-width: 30%;
+    overflow: hidden;
 }
 
 #dialog-grid {
     display: grid;
     text-align: center;
     justify-content: center;
-    grid-template-rows: 2fr 1fr;
-    gap: 1em;
+    grid-template-rows: 2fr auto;
+    gap: 2em;
 
     h1 {
         margin-bottom: 0.3em;
+        overflow-wrap: break-word;
     }
 
     p {
@@ -400,14 +406,38 @@ dialog {
 
 #star-1 {
     position: absolute;
+    width: 11%;
     top: 30%;
     right: 3%;
 }
 
 #star-2 {
     position: absolute;
+    width: 5%;
     left: 8%;
     top: 13%;
+}
+
+@keyframes confettiDropping {
+    from {
+        bottom: 100%;
+    }
+
+    to {
+        bottom: 0%;
+        opacity: 0;
+    }
+}
+
+#confetti {
+    position: absolute;
+    left: 0;
+    max-width: 100%;
+    z-index: 2;
+}
+
+.dropping-animation {
+    animation: confettiDropping 6s;
 }
 
 #dialog-title {
@@ -467,6 +497,7 @@ dialog {
 #dialog-scores {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .score {
@@ -482,6 +513,9 @@ dialog {
     > *:last-child {
         flex-grow: 1;
     }
+}
+
+.dialog-title {
 }
 
 .sora-bold {
@@ -537,16 +571,9 @@ dialog {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        gap: 2.4ex 2ex;
-        margin-bottom: 2.5ex ; 
-    }
-
-    #before-test p {
-        margin: 0;
-    }
-
-    #before-test > div {
-        margin: 0;
+        gap: 1.8ex;
+        margin-bottom: 0.6ex;
+        justify-content: center;
     }
 
     #scores {
@@ -564,12 +591,61 @@ dialog {
     .score-value {
         border-right: none;
         padding: 0;
+        color: var(--wpm-color);
     }
 
     .divider {
         height: stretch;
         border: 1px solid var(--border);
     }
+
+    .settings, #settings-form .divider {
+        display: none;
+    }
+
+    #settings-form {
+        flex-grow: 1;
+    }
+
+    #settings-mobile {
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: 1.2ex;
+        justify-items: stretch;
+    }
+
+    #settings-mobile select {
+        background-color: transparent;
+        color: var(--wpm-color);
+        border: 1px solid var(--test-text-color);
+        border-left-color: var(--labels);
+        border-right-color: var(--labels);
+        border-radius: 1.1ex;
+        font-size: var(--label-size);
+        font-family: "Sora", sans-serif;
+        text-align: center;
+        padding: 0.5ex;
+        min-width: 100%;
+    }
+
+    #settings-mobile select:focus {
+        outline: none;
+    }
+
+    #settings-mobile option {
+        background-color: var(--bg-color);
+    }
+
+    #settings-mobile.settings-disabled {
+        pointer-events: none;
+        
+        select {
+            color: var(--labels);
+            border-color: var(--labels);
+        }
+    }
+
 
     /* Footer */
     footer {

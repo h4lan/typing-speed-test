@@ -127,7 +127,11 @@ const data = {
   ]
 }
 
-
+/**
+ * From MDN Docs
+ * @param {*} type The type of storage (e.g.: "localStorage")
+ * @returns A boolean indicating wether the storage type is available
+ */
 function storageAvailable(type) {
   try {
     var storage = window[type],
@@ -153,7 +157,10 @@ function storageAvailable(type) {
   }
 }
 
-
+/**
+ * It could have been better to implement the timer and the timeout
+ * as two different objects
+ */
 const timeManager = {
   time: 0,
   ellapsed: 0,
@@ -195,6 +202,7 @@ const timeManager = {
   },
   cancelTimeout() {
     clearTimeout(this.timerTimeout)
+    clearInterval(this.refreshInterval)
     this.stopTimer()
     this.timerTimeout = 0
   },
@@ -379,8 +387,9 @@ const game = {
 
     // Disabling settings buttons
     document.querySelectorAll(".settings").forEach((buttons) => {
-      buttons.classList.add("settings-disabled")
+      buttons.classList.toggle("settings-disabled")
     })
+    document.getElementById("settings-mobile").classList.toggle("settings-disabled")
 
     document.querySelector("#restart-bar").style.display = ""
 
@@ -414,7 +423,7 @@ const game = {
     game.typed = 0
     game.mistakes = 0
     game.mistakesPermanent = 0
-    // Pb and totalTyped set on window load
+    // Pb and totalTyped are set on window load
 
     game.generateTextModel()
 
@@ -434,6 +443,7 @@ const game = {
     document.querySelectorAll(".settings").forEach((buttons) => {
       buttons.classList.remove("settings-disabled")
     })
+    document.getElementById("settings-mobile").classList.remove("settings-disabled")
 
     // Resetting stats and text
     document.querySelector("#wpm-score").textContent = "-"
@@ -459,7 +469,6 @@ const game = {
         document.querySelector("#dialog-grid").classList.add("established")
         break
       case "pb":
-        // TODO : confetti animation
         document.querySelector("#dialog-grid").classList.add("new-pb")
         break
       default:
@@ -526,6 +535,7 @@ window.addEventListener("load", () => {
         case "difficulty":
           button.addEventListener("click", () => {
             game.difficulty = button.value
+            document.getElementById("difficulty-select-" + button.value).selected = true
             game.generateTextModel()
           })
           break
@@ -533,6 +543,7 @@ window.addEventListener("load", () => {
           button.addEventListener("click", () => {
             game.mode = button.value > 0 ? "timed" : "passage"
             game.modeTime = button.value
+            document.getElementById("mode-select-" + button.value).selected = true
             timeManager.changeTimeShown(false, button.value)
           })
           break
@@ -540,6 +551,29 @@ window.addEventListener("load", () => {
           console.error("Unrecognized settings button") 
       }
     })
+
+  document.querySelectorAll("#settings-mobile select")
+  .forEach( (elem) => {
+    switch (elem.name) {
+      case "difficulty":
+        elem.addEventListener("change", (event) => {
+          game.difficulty = event.target.value
+          document.querySelector("div.settings input[value='" + event.target.value + "']").checked = true
+          game.generateTextModel()
+        })
+        break
+      case "mode":
+        elem.addEventListener("change", (event) => {
+          game.mode = event.target.value > 0 ? "timed" : "passage"
+          game.modeTime = event.target.value
+          document.querySelector("div.settings input[value=\"" + event.target.value + "\"]").checked = true
+          timeManager.changeTimeShown(false, event.target.value)
+        })
+        break
+      default:
+        console.error("Unrecognized select element button") 
+    }
+  })
     
   // Loading game stats from localStorage
   if (storageAvailable("localStorage")) {
@@ -582,8 +616,38 @@ window.addEventListener("load", () => {
       resumeMsg.style.display = "grid"
     }
   })
+
+  // Restart confetti animation on dialog show
+  const confettiImg = document.getElementById("confetti")
+  document.getElementById("complete-popup").addEventListener("toggle", (event) => {
+    if (event.newState == "open") {
+      confettiImg.style.display = "block"
+      confettiImg.classList.add("dropping-animation")
+    }
+  })
+  confettiImg.addEventListener("animationend", (event) => {
+    confettiImg.style.display = "none"
+    event.target.classList.remove("dropping-animation")
+  })
+
 })
 
-// TODO: faire style css pour mobile
-// TODO: animation confettis si pb battu
-// TODO: revoir cohérence entre states (timer, jeu)
+// TODO: difficultés rencontrées (feedback needed)
+// empêcher d'afficher le bouton "resume game" pendant une fraction de seconde lorsque l'on clique sur restart,
+// customiser le dropdown pour les settings en utilisant un element select, et des feature css supportées uniquement
+// logique du jeu - enlever les styles appliqués sur le textTyped lorsque l'on supprime des charactères
+// empêcher la sélection du texte avec la souris
+// accéder aux données directement dans le fichier .json
+// limiting the height of the page to only the screen: no overflow, no scroll bar if the text is too long
+
+// TODO: best practices ?
+// créer functions directement dans le corps du texte plutôt que dans des objets intermédiaires ?
+// stocker les données dans un fichier js différent
+// const globales pour celles utilisées fréquemment => mieux
+// event DOMContentLoaded plutôt que load (car DOMContentLoaded attend le chargement de tous les elements de *LA PAGE ACTUELLE*)
+// Bien fait: séparer fonctions et "document.addEventListener('DOMContentLoad', ...)"
+// Réduire le corps des eventListener: décomposer l'action à effectuer lors de l'event en *plusieurs fonctions clés* ou réutilisables -> le code actuel a-t-il bonne forme ou pas?
+
+
+// TODO: découvertes lors du jeu
+// .bind(this)
