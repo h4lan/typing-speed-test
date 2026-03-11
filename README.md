@@ -12,6 +12,8 @@ This is a solution to the [Typing Speed Test challenge on Frontend Mentor](https
   - [Built with](#built-with)
   - [What I learned](#what-i-learned)
   - [Continued development](#continued-development)
+  - [Feedback wanted](#feedback-wanted)
+  - [Challenges encounterd](#challenges-encountered)
   - [Useful resources](#useful-resources)
   - [AI Collaboration](#ai-collaboration)
 - [Author](#author)
